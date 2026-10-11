@@ -1,0 +1,54 @@
+
+  body { font-family: 'DM Sans', sans-serif; background: #F5EFE8; }
+  h1,h2 { font-family: 'Playfair Display', serif; }
+  .status-pending { background: #FEF3C7; color: #92400E; }
+  .status-confirmed { background: #D1FAE5; color: #065F46; }
+  .status-cancelled { background: #FEE2E2; color: #991B1B; }
+  .status-rescheduled { background: #F3E8FF; color: #6B21A8; }
+
+  /* Date input styling — clean look on all browsers */
+  input[type="date"] {
+    min-height: 40px;
+    color: #374151;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  input[type="date"]::-webkit-date-and-time-value {
+    text-align: left;
+  }
+
+  /* Responsive booking cards for mobile */
+  @media (max-width: 639px) {
+    .bookings-table-wrap { display: none !important; }
+    .bookings-cards-wrap { display: block !important; }
+  }
+  @media (min-width: 640px) {
+    .bookings-cards-wrap { display: none !important; }
+  }
+  .booking-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border: 1px solid #f1f5f9;
+  }
+  .booking-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .booking-card-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+  }
+  .booking-card-actions button {
+    flex: 1;
+    min-width: 80px;
+  }

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Availability engine tests</title>
+<style>
+  :root { color-scheme: light; }
+  body { font: 14px/1.6 ui-monospace, 'Cascadia Code', Menlo, monospace;
+         background: #F7F3ED; color: #1C1815; margin: 0; padding: 2rem; }
+  h1 { font: 500 1.4rem/1.2 system-ui; margin: 0 0 0.3rem; }
+  .sub { font: 14px/1.6 system-ui; color: #5C5147; margin: 0 0 1.5rem; }
+  #summary { padding: 1rem 1.2rem; border-left: 3px solid #A17746; background: #EFE8DF; margin-bottom: 1.5rem;
+             font: 500 1rem/1.5 system-ui; }
+  #summary.pass { border-left-color: #3F6B4F; }
+  #summary.fail { border-left-color: #93352B; }
+  ol { padding-left: 1.6rem; }
+  li { margin-bottom: 0.3rem; }
+  .ok   { color: #3F6B4F; }
+  .bad  { color: #93352B; font-weight: 700; }
+  .why  { color: #5C5147; display: block; padding-left: 1rem; }
+  h2 { font: 500 0.95rem/1.4 system-ui; margin: 1.6rem 0 0.4rem; text-transform: uppercase;
+       letter-spacing: 0.08em; color: #8B7B6B; }
+</style>
+</head>
+<body>
+
+<h1>Availability engine tests</h1>
+<p class="sub">
+  Exercises <code>assets/js/availability.js</code> directly &mdash; the same module the booking
+  UI uses. Serve the project and open <code>/tests/availability.html</code>.
+</p>
+
+<div id="summary">Running&hellip;</div>
+<div id="results"></div>
+
+<script src="../assets/js/availability.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var AV = window.SalonAvailability;
+  var results = [];
+  var currentGroup = null;
+
+  function group(name) { currentGroup = name; }
+
+  function test(name, fn) {
+    try {
+      fn();
+      results.push({ group: currentGroup, name: name, pass: true });
+    } catch (err) {
+      results.push({ group: currentGroup, name: name, pass: false, why: err.message });
+    }
+  }
+
+  function eq(actual, expected, label) {
+    var a = JSON.stringify(actual), b = JSON.stringify(expected);
+    if (a !== b) throw new Error((label ? label + ': ' : '') + 'expected ' + b + ', got ' + a);
+  }
+  function ok(value, label) { if (!value) throw new Error(label || 'expected truthy'); }
+  function throws(fn, label) {
+    var threw = false;
+    try { fn(); } catch (e) { threw = true; }
+    if (!threw) throw new Error((label || 'expected a throw') + ' but nothing was thrown');
+  }
+
+  /* Shorthands used throughout. Hours match the salon: 10:00 to 22:00. */
+  var HOURS = { open: '10:00', close: '22:00' };
+  var CUT   = { duration: 60,  buffer: 10, resource: 'styling-chair' };   // blocks 70
+  var LONG  = { duration: 120, buffer: 15, resource: 'styling-chair' };   // blocks 135
+  var QUICK = { duration: 30,  buffer: 0,  resource: 'styling-chair' };   // blocks 30
+  var NAILS = { duration: 45,  buffer: 10, resource: 'nail-station' };
+
+  function slotsFor(options) {
+    var base = {
+      service: CUT, date: '2026-10-15', hours: HOURS, resourceCount: 1,
+      bookings: [], slotStepMinutes: 15, leadTimeMinutes: 60
+    };
+    for (var k in options) base[k] = options[k];
+    return AV.computeSlots(base);
+  }
+  function freeTimes(result) {
+    return result.slots.filter(function (s) { return s.available; })
+                       .map(function (s) { return s.time; });
+  }
+
+  /* ========================================================
+     TIME AND DATE PRIMITIVES
+     ======================================================== */
+  group('Time and date handling');
+
+  test('parses HH:MM into minutes', function () {
+    eq(AV.parseTime('10:00'), 600);
+    eq(AV.parseTime('17:30'), 1050);
+    eq(AV.parseTime('00:00'), 0);
+    eq(AV.parseTime('09:05:00'), 545, 'seconds tolerated');
+  });
+
+  test('rejects malformed and out-of-range times', function () {
+    throws(function () { AV.parseTime('25:00'); }, 'hour 25');
+    throws(function () { AV.parseTime('10:60'); }, 'minute 60');
+    throws(function () { AV.parseTime('abc'); }, 'not a time');
+    throws(function () { AV.parseTime(''); }, 'empty');
+  });
+
+  test('formats 24-hour and 12-hour labels', function () {
+    eq(AV.formatTime(600), '10:00');
+    eq(AV.formatTime(1290), '21:30');
+    eq(AV.formatTimeLabel(600), '10:00 AM');
+    eq(AV.formatTimeLabel(1020), '5:00 PM');
+    eq(AV.formatTimeLabel(720), '12:00 PM', 'noon is 12 PM not 0 PM');
+    eq(AV.formatTimeLabel(0), '12:00 AM', 'midnight is 12 AM');
+  });
+
+  test('derives weekday Monday-first without local-timezone drift', function () {
+    eq(AV.weekdayMondayFirst('2026-10-12'), 0, 'Monday');
+    eq(AV.weekdayMondayFirst('2026-10-17'), 5, 'Saturday');
+    eq(AV.weekdayMondayFirst('2026-10-18'), 6, 'Sunday');
+    eq(AV.weekdayMondayFirst('2026-01-01'), 3, 'Thursday');
+  });
+
+  test('validates date strings', function () {
+    ok(AV.isValidDateString('2026-02-28'));
+    ok(!AV.isValidDateString('2026-02-30'), 'Feb 30 is not a date');
+    ok(!AV.isValidDateString('2026-13-01'), 'month 13');
+    ok(!AV.isValidDateString('15-10-2026'), 'wrong order');
+    ok(AV.isValidDateString('2028-02-29'), '2028 is a leap year');
+    ok(!AV.isValidDateString('2027-02-29'), '2027 is not');
+  });
+
+  test('adds days across month and year boundaries', function () {
+    eq(AV.addDays('2026-10-30', 3), '2026-11-02');
+    eq(AV.addDays('2026-12-30', 5), '2027-01-04');
+    eq(AV.addDays('2028-02-28', 1), '2028-02-29');
+  });
+
+  /* Salon-local time is the whole ballgame for a Mumbai salon: UTC+5:30
+     means a naive implementation lands on the wrong DAY for most of the
+     Indian evening. */
+  test('reads the salon-local date and time, not the device one', function () {
+    // 2026-10-15 19:00 UTC is 2026-10-16 00:30 in Mumbai: next day.
+    var n = AV.salonNow('Asia/Kolkata', '2026-10-15T19:00:00Z');
+    eq(n.date, '2026-10-16', 'date rolls over');
+    eq(n.minutes, 30, '00:30');
+
+    // 2026-10-15 03:00 UTC is 08:30 the same morning in Mumbai.
+    var m = AV.salonNow('Asia/Kolkata', '2026-10-15T03:00:00Z');
+    eq(m.date, '2026-10-15');
+    eq(m.minutes, 8 * 60 + 30);
+
+    // The half-hour offset specifically.
+    var h = AV.salonNow('Asia/Kolkata', '2026-10-15T11:45:00Z');
+    eq(h.minutes, 17 * 60 + 15, '11:45 UTC is 17:15 IST');
+  });
+
+  /* ========================================================
+     THE OVERLAP RULE
+     ======================================================== */
+  group('Overlap rule');
+
+  test('detects overlapping intervals', function () {
+    ok(AV.overlaps(100, 200, 150, 250), 'partial overlap');
+    ok(AV.overlaps(150, 250, 100, 200), 'partial overlap, reversed');
+    ok(AV.overlaps(100, 300, 150, 200), 'fully contained');
+    ok(AV.overlaps(150, 200, 100, 300), 'fully containing');
+    ok(AV.overlaps(100, 200, 100, 200), 'identical');
+  });
+
+  test('treats touching intervals as free (half-open ranges)', function () {
+    ok(!AV.overlaps(100, 200, 200, 300), 'end meets start');
+    ok(!AV.overlaps(200, 300, 100, 200), 'start meets end');
+    ok(!AV.overlaps(100, 200, 201, 300), 'clear gap');
+  });
+
+  /* ========================================================
+     SLOT GENERATION
+     ======================================================== */
+  group('Slot generation');
+
+  test('offers every step between opening and the last finishable start', function () {
+    var r = slotsFor({ now: null });
+    eq(r.closed, false);
+    eq(r.slots.length, 45, '10:00 to 21:00 inclusive, every 15 minutes');
+    eq(r.slots[0].time, '10:00');
+    eq(r.slots[r.slots.length - 1].time, '21:00', 'a 60-min service must finish by 22:00');
+    eq(r.availableCount, 45);
+  });
+
+  test('a longer service gets fewer, earlier-ending starts', function () {
+    var r = slotsFor({ service: LONG, now: null });
+    eq(r.slots[r.slots.length - 1].time, '20:00', '120-min service must finish by 22:00');
+    eq(r.slots.length, 41);
+  });
+
+  test('the turnaround buffer may run past closing, the treatment may not', function () {
+    // CUT finishes at 22:00 from a 21:00 start; its 10-minute buffer
+    // spills to 22:10, which is cleanup, not customer time.
+    var r = slotsFor({ now: null });
+    ok(freeTimes(r).indexOf('21:00') !== -1, '21:00 is offered');
+    ok(freeTimes(r).indexOf('21:15') === -1, '21:15 would finish at 22:15');
+  });
+
+  test('a closed day returns no slots', function () {
+    var r = slotsFor({ hours: null, now: null });
+    eq(r.closed, true);
+    eq(r.slots.length, 0);
+    eq(r.availableCount, 0);
+  });
+
+  test('rejects impossible configuration instead of guessing', function () {
+    throws(function () { slotsFor({ hours: { open: '20:00', close: '10:00' } }); }, 'close before open');
+    throws(function () { AV.computeSlots({ service: CUT, date: 'not-a-date', hours: HOURS }); }, 'bad date');
+    throws(function () { AV.computeSlots({ date: '2026-10-15', hours: HOURS }); }, 'missing service');
+    throws(function () {
+      AV.computeSlots({ service: { duration: 0, resource: 'x' }, date: '2026-10-15', hours: HOURS });
+    }, 'zero duration');
+    throws(function () {
+      AV.computeSlots({ service: { duration: -30, resource: 'x' }, date: '2026-10-15', hours: HOURS });
+    }, 'negative duration');
+  });
+
+  /* ========================================================
+     EXCLUSIVITY — the core requirement
+     ======================================================== */
+  group('Exclusivity');
+
+  test('an existing appointment removes every overlapping start', function () {
+    // Someone booked 17:00. A 60+10 service blocks 17:00-18:10.
+    var r = slotsFor({
+      now: null,
+      bookings: [{ resource: 'styling-chair', start: '17:00', end: '18:10' }]
+    });
+    var free = freeTimes(r);
+
+    eq(free.indexOf('17:00'), -1, '17:00 itself is gone');
+    eq(free.indexOf('16:00'), -1, '16:00 would run to 17:10');
+    eq(free.indexOf('18:00'), -1, '18:00 would run to 19:10 but starts inside the block');
+    ok(free.indexOf('15:45') !== -1, '15:45 finishes at 16:55, clear');
+    ok(free.indexOf('18:15') !== -1, '18:15 starts after the block ends at 18:10');
+
+    // Exactly the contiguous blocked run, nothing more, nothing less.
+    var blocked = r.slots.filter(function (s) { return !s.available; })
+                         .map(function (s) { return s.time; });
+    eq(blocked, ['16:00','16:15','16:30','16:45','17:00','17:15','17:30','17:45','18:00']);
+  });
+
+  test('every blocked slot says why', function () {
+    var r = slotsFor({
+      now: null,
+      bookings: [{ resource: 'styling-chair', start: '17:00', end: '18:10' }]
+    });
+    r.slots.forEach(function (s) {
+      if (!s.available) eq(s.reason, 'booked', s.time);
+      else eq(s.reason, null, s.time);
+    });
+  });
+
+  test('adjacent appointments are allowed when no buffer forbids them', function () {
+    // QUICK has no buffer: a 17:00-17:30 booking leaves 17:30 free.
+    var r = slotsFor({
+      service: QUICK, now: null,
+      bookings: [{ resource: 'styling-chair', start: '17:00', end: '17:30' }]
+    });
+    var free = freeTimes(r);
+    ok(free.indexOf('17:30') !== -1, '17:30 starts exactly as the other ends');
+    ok(free.indexOf('16:30') !== -1, '16:30 ends exactly as the other starts');
+    eq(free.indexOf('17:00'), -1);
+    eq(free.indexOf('17:15'), -1);
+  });
+
+  test('a buffer pushes the next start later than the service alone would', function () {
+    // The brief's example: a 5:00 PM booking does NOT simply free 5:30.
+    var r = slotsFor({
+      service: { duration: 30, buffer: 15, resource: 'styling-chair' },
+      now: null,
+      bookings: [{ resource: 'styling-chair', start: '17:00', end: '17:45' }]
+    });
+    var free = freeTimes(r);
+    eq(free.indexOf('17:30'), -1, '17:30 still sits inside the previous booking plus buffer');
+    ok(free.indexOf('17:45') !== -1, '17:45 is the real next start');
+  });
+
+  test('back-to-back bookings merge into one blocked run', function () {
+    var r = slotsFor({
+      now: null,
+      bookings: [
+        { resource: 'styling-chair', start: '12:00', end: '13:10' },
+        { resource: 'styling-chair', start: '13:10', end: '14:20' }
+      ]
+    });
+    var free = freeTimes(r);
+    eq(free.indexOf('13:00'), -1);
+    eq(free.indexOf('13:15'), -1);
+    ok(free.indexOf('14:30') !== -1, 'clear once both are done');
+  });
+
+  test('a booking on another resource does not block this service', function () {
+    var r = slotsFor({
+      now: null,
+      bookings: [{ resource: 'nail-station', start: '17:00', end: '17:55' }]
+    });
+    ok(freeTimes(r).indexOf('17:00') !== -1, 'a manicure cannot occupy the styling chair');
+    eq(r.availableCount, 45);
+  });
+
+  test('a second chair keeps the time available until both are busy', function () {
+    var one = slotsFor({
+      now: null, resourceCount: 2,
+      bookings: [{ resource: 'styling-chair', resourceIndex: 0, start: '17:00', end: '18:10' }]
+    });
+    ok(freeTimes(one).indexOf('17:00') !== -1, 'chair 2 is still free');
+    eq(one.slots.filter(function (s) { return s.time === '17:00'; })[0].resourceIndex, 1,
+       'and the engine says which chair it would use');
+
+    var both = slotsFor({
+      now: null, resourceCount: 2,
+      bookings: [
+        { resource: 'styling-chair', resourceIndex: 0, start: '17:00', end: '18:10' },
+        { resource: 'styling-chair', resourceIndex: 1, start: '17:00', end: '18:10' }
+      ]
+    });
+    eq(freeTimes(both).indexOf('17:00'), -1, 'now it is genuinely gone');
+  });
+
+  test('services of different lengths see the same booking differently', function () {
+    var booking = [{ resource: 'styling-chair', start: '14:00', end: '15:10' }];
+    var shortSvc = slotsFor({ service: QUICK, now: null, bookings: booking });
+    var longSvc  = slotsFor({ service: LONG,  now: null, bookings: booking });
+
+    // A 30-minute service can squeeze in at 13:30 (ends 14:00).
+    ok(freeTimes(shortSvc).indexOf('13:30') !== -1, '30-min fits right up to the block');
+    // A 120+15 service starting at 13:30 would run to 15:45: no.
+    eq(freeTimes(longSvc).indexOf('13:30'), -1, '120-min does not fit the same gap');
+    ok(freeTimes(longSvc).indexOf('15:10') === -1, '15:10 is off the 15-minute grid anyway');
+    ok(freeTimes(longSvc).indexOf('15:15') !== -1, '15:15 clears the block');
+  });
+
+  /* ========================================================
+     TIME THAT HAS PASSED
+     ======================================================== */
+  group('Past and lead time');
+
+  test('today starts from now plus the lead time', function () {
+    var r = slotsFor({ now: { date: '2026-10-15', minutes: 16 * 60 }, leadTimeMinutes: 60 });
+    var free = freeTimes(r);
+    eq(free[0], '17:00', 'one hour of notice from 16:00');
+    eq(free.indexOf('16:45'), -1);
+    r.slots.filter(function (s) { return s.time < '17:00'; })
+           .forEach(function (s) { eq(s.reason, 'past', s.time); });
+  });
+
+  test('zero lead time still excludes times already gone', function () {
+    var r = slotsFor({ now: { date: '2026-10-15', minutes: 16 * 60 + 5 }, leadTimeMinutes: 0 });
+    eq(freeTimes(r)[0], '16:15', 'the 16:00 slot has started');
+  });
+
+  test('a future date is unaffected by the current time', function () {
+    var r = slotsFor({ date: '2026-10-20', now: { date: '2026-10-15', minutes: 21 * 60 } });
+    eq(r.availableCount, 45, 'a later date opens fully');
+  });
+
+  test('a past date offers nothing at all', function () {
+    var r = slotsFor({ date: '2026-10-01', now: { date: '2026-10-15', minutes: 600 } });
+    eq(r.availableCount, 0);
+    ok(r.slots.length > 0, 'the slots still render, as disabled');
+    r.slots.forEach(function (s) { eq(s.reason, 'past', s.time); });
+  });
+
+  test('late in the evening today is correctly empty', function () {
+    var r = slotsFor({ now: { date: '2026-10-15', minutes: 21 * 60 + 30 }, leadTimeMinutes: 60 });
+    eq(r.availableCount, 0, 'nothing can still be fitted in before 22:00');
+  });
+
+  test('past and booked are reported separately', function () {
+    var r = slotsFor({
+      now: { date: '2026-10-15', minutes: 16 * 60 }, leadTimeMinutes: 60,
+      bookings: [{ resource: 'styling-chair', start: '18:00', end: '19:10' }]
+    });
+    var byTime = {};
+    r.slots.forEach(function (s) { byTime[s.time] = s.reason; });
+    eq(byTime['11:00'], 'past');
+    eq(byTime['18:00'], 'booked');
+    eq(byTime['20:00'], null);
+  });
+
+  /* ========================================================
+     CALENDAR WINDOW
+     ======================================================== */
+  group('Booking window');
+
+  test('today is bookable, yesterday is not', function () {
+    var now = { date: '2026-10-15', minutes: 600 };
+    ok(AV.isDateBookable('2026-10-15', now, 45), 'today');
+    ok(!AV.isDateBookable('2026-10-14', now, 45), 'yesterday');
+  });
+
+  test('the horizon is respected to the day', function () {
+    var now = { date: '2026-10-15', minutes: 600 };
+    ok(AV.isDateBookable('2026-11-29', now, 45), 'exactly 45 days out');
+    ok(!AV.isDateBookable('2026-11-30', now, 45), 'one day past the horizon');
+  });
+
+  test('a malformed date is never bookable', function () {
+    var now = { date: '2026-10-15', minutes: 600 };
+    ok(!AV.isDateBookable('2026-02-31', now, 45));
+    ok(!AV.isDateBookable('rubbish', now, 45));
+  });
+
+  /* ========================================================
+     REPORT
+     ======================================================== */
+  var passed = results.filter(function (r) { return r.pass; }).length;
+  var failed = results.length - passed;
+
+  var summary = document.getElementById('summary');
+  summary.className = failed ? 'fail' : 'pass';
+  summary.textContent = failed
+    ? failed + ' of ' + results.length + ' tests FAILED'
+    : 'All ' + results.length + ' tests passed';
+
+  var host = document.getElementById('results');
+  var lastGroup = null;
+  var list = null;
+  results.forEach(function (r) {
+    if (r.group !== lastGroup) {
+      lastGroup = r.group;
+      var h = document.createElement('h2');
+      h.textContent = r.group;
+      host.appendChild(h);
+      list = document.createElement('ol');
+      host.appendChild(list);
+    }
+    var li = document.createElement('li');
+    li.className = r.pass ? 'ok' : 'bad';
+    li.textContent = (r.pass ? 'PASS  ' : 'FAIL  ') + r.name;
+    if (!r.pass) {
+      var why = document.createElement('span');
+      why.className = 'why';
+      why.textContent = r.why;
+      li.appendChild(why);
+    }
+    list.appendChild(li);
+  });
+
+  // Machine-readable, for the harness that drives this page.
+  window.TEST_RESULTS = {
+    total: results.length, passed: passed, failed: failed,
+    failures: results.filter(function (r) { return !r.pass; })
+                     .map(function (r) { return r.group + ' / ' + r.name + ': ' + r.why; })
+  };
+})();
+</script>
+</body>
+</html>

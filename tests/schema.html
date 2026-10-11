@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Booking schema tests (Postgres)</title>
+<style>
+  :root { color-scheme: light; }
+  body { font: 14px/1.6 ui-monospace, 'Cascadia Code', Menlo, monospace;
+         background: #F7F3ED; color: #1C1815; margin: 0; padding: 2rem; }
+  h1 { font: 500 1.4rem/1.2 system-ui; margin: 0 0 0.3rem; }
+  .sub { font: 14px/1.6 system-ui; color: #5C5147; margin: 0 0 1.5rem; max-width: 80ch; }
+  #summary { padding: 1rem 1.2rem; border-left: 3px solid #A17746; background: #EFE8DF;
+             margin-bottom: 1.5rem; font: 500 1rem/1.5 system-ui; white-space: pre-wrap; }
+  #summary.pass { border-left-color: #3F6B4F; }
+  #summary.fail { border-left-color: #93352B; }
+  ol { padding-left: 1.6rem; }
+  li { margin-bottom: 0.3rem; }
+  .ok { color: #3F6B4F; }
+  .bad { color: #93352B; font-weight: 700; }
+  .why { color: #5C5147; display: block; padding-left: 1rem; white-space: pre-wrap; }
+  h2 { font: 500 0.95rem/1.4 system-ui; margin: 1.6rem 0 0.4rem; text-transform: uppercase;
+       letter-spacing: 0.08em; color: #8B7B6B; }
+  code { background: #EFE8DF; padding: 0 0.25em; }
+</style>
+</head>
+<body>
+
+<h1>Booking schema tests</h1>
+<p class="sub">
+  Loads <code>supabase/schema.sql</code> &mdash; the exact file you run in Supabase &mdash; into a
+  real Postgres compiled to WebAssembly, then exercises the booking rules against it.
+  Needs an internet connection the first time, to fetch PGlite.
+</p>
+
+<div id="summary">Booting Postgres&hellip;</div>
+<div id="results"></div>
+
+<script type="module">
+const summaryEl = document.getElementById('summary');
+const resultsEl = document.getElementById('results');
+const results = [];
+let currentGroup = null;
+
+function group(name) { currentGroup = name; }
+
+async function test(name, fn) {
+  try {
+    await fn();
+    results.push({ group: currentGroup, name, pass: true });
+  } catch (err) {
+    results.push({ group: currentGroup, name, pass: false, why: String(err && err.message || err) });
+  }
+}
+
+function eq(actual, expected, label) {
+  const a = JSON.stringify(actual), b = JSON.stringify(expected);
+  if (a !== b) throw new Error((label ? label + ': ' : '') + `expected ${b}, got ${a}`);
+}
+function ok(v, label) { if (!v) throw new Error(label || 'expected truthy'); }
+
+function report(extraNote) {
+  const passed = results.filter(r => r.pass).length;
+  const failed = results.length - passed;
+  summaryEl.className = failed ? 'fail' : 'pass';
+  summaryEl.textContent =
+    (failed ? `${failed} of ${results.length} tests FAILED` : `All ${results.length} tests passed`) +
+    (extraNote ? '\n\n' + extraNote : '');
+
+  let lastGroup = null, list = null;
+  resultsEl.innerHTML = '';
+  for (const r of results) {
+    if (r.group !== lastGroup) {
+      lastGroup = r.group;
+      const h = document.createElement('h2');
+      h.textContent = r.group;
+      resultsEl.appendChild(h);
+      list = document.createElement('ol');
+      resultsEl.appendChild(list);
+    }
+    const li = document.createElement('li');
+    li.className = r.pass ? 'ok' : 'bad';
+    li.textContent = (r.pass ? 'PASS  ' : 'FAIL  ') + r.name;
+    if (!r.pass) {
+      const why = document.createElement('span');
+      why.className = 'why';
+      why.textContent = r.why;
+      li.appendChild(why);
+    }
+    list.appendChild(li);
+  }
+
+  window.TEST_RESULTS = {
+    total: results.length, passed, failed, note: extraNote || null,
+    failures: results.filter(r => !r.pass).map(r => `${r.group} / ${r.name}: ${r.why}`)
+  };
+}
+
+let db;
+let note = '';
+
+try {
+  // The browser build straight from the package. esm.sh resolves the
+  // Node condition for this package and hands back a bundle that calls
+  // fs.readFile, so the dist path is used deliberately.
+  const PGLITE = 'https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.2.17/dist/';
+  const { PGlite } = await import(PGLITE + 'index.js');
+  let extensions = {};
+  try {
+    const mod = await import(PGLITE + 'contrib/btree_gist.js');
+    extensions = { btree_gist: mod.btree_gist };
+  } catch (e) {
+    note += 'btree_gist could not be loaded into PGlite; see the exclusion-constraint test.\n';
+  }
+  db = await new PGlite({ extensions });
+
+  const sql = await fetch('../supabase/schema.sql').then(r => {
+    if (!r.ok) throw new Error('could not fetch schema.sql: HTTP ' + r.status);
+    return r.text();
+  });
+
+  summaryEl.textContent = 'Applying schema.sql…';
+  await db.exec(sql);
+} catch (err) {
+  summaryEl.className = 'fail';
+  summaryEl.textContent = 'Could not set up the database:\n' + (err && err.message || err);
+  window.TEST_RESULTS = { total: 0, passed: 0, failed: 1, failures: ['setup: ' + (err && err.message || err)] };
+  throw err;
+}
+
+/* Helpers ----------------------------------------------------------- */
+const q = async (sql, params) => (await db.query(sql, params)).rows;
+const one = async (sql, params) => (await q(sql, params))[0];
+
+const book = async (serviceId, date, time, over = {}) => (await one(
+  `select public.create_booking($1, $2::date, $3::time, $4, $5, $6, $7) as r`,
+  [serviceId, date, time,
+   over.name ?? 'Priya Shah',
+   over.phone ?? '+919820012345',
+   over.email ?? 'priya@example.com',
+   over.notes ?? null]
+)).r;
+
+const slots = (serviceId, date) =>
+  q(`select to_char(slot_time,'HH24:MI') as t, available, reason
+       from public.available_slots($1, $2::date) order by slot_time`, [serviceId, date]);
+
+const freeTimes = async (serviceId, date) =>
+  (await slots(serviceId, date)).filter(r => r.available).map(r => r.t);
+
+// Salon-local "today" and a safely-future working date, read from the DB
+// itself so the tests agree with the functions about what time it is.
+const today = (await one(`select (now() at time zone 'Asia/Kolkata')::date::text as d`)).d;
+const day = (await one(`select (((now() at time zone 'Asia/Kolkata')::date) + 7)::text as d`)).d;
+const yesterday = (await one(`select (((now() at time zone 'Asia/Kolkata')::date) - 1)::text as d`)).d;
+
+const reset = () => db.exec('delete from public.bookings; delete from public.closures;');
+
+/* ==================================================================
+   SCHEMA
+   ================================================================== */
+group('Schema');
+
+await test('the seed loaded: services, resources and hours exist', async () => {
+  const s = await one(`select count(*)::int as n from public.services`);
+  ok(s.n >= 30, `expected the full service list, got ${s.n}`);
+  const r = await one(`select count(*)::int as n from public.resources where active`);
+  eq(r.n, 4, 'four bookable resources');
+  const h = await one(`select count(*)::int as n from public.opening_hours where opens is not null`);
+  eq(h.n, 7, 'open seven days');
+});
+
+await test('the overlap guard exists as a real constraint', async () => {
+  const c = await one(
+    `select conname, pg_get_constraintdef(oid) as def
+       from pg_constraint where conname = 'bookings_no_overlap'`);
+  ok(c, 'bookings_no_overlap is missing');
+  ok(/EXCLUDE USING gist/i.test(c.def), 'not a gist exclusion constraint: ' + c.def);
+  ok(/status <> 'cancelled'/.test(c.def), 'cancelled bookings should be exempt: ' + c.def);
+});
+
+await test('bookings are locked down by row level security', async () => {
+  const t = await one(
+    `select relrowsecurity from pg_class where oid = 'public.bookings'::regclass`);
+  eq(t.relrowsecurity, true, 'RLS must be enabled on bookings');
+  const p = await one(
+    `select count(*)::int as n from pg_policies
+      where schemaname='public' and tablename='bookings'`);
+  eq(p.n, 0, 'bookings must have no policy, so anon can read nothing');
+  const g = await one(
+    `select count(*)::int as n from information_schema.role_table_grants
+      where table_name='bookings' and grantee in ('anon','authenticated')`);
+  eq(g.n, 0, 'anon must hold no table privileges on bookings');
+});
+
+await test('reference data stays readable to the public key', async () => {
+  const g = await one(
+    `select count(*)::int as n from information_schema.role_table_grants
+      where table_name='services' and grantee='anon' and privilege_type='SELECT'`);
+  eq(g.n, 1, 'anon should be able to read the service list');
+});
+
+/* ==================================================================
+   AVAILABILITY
+   ================================================================== */
+group('Availability');
+
+await test('a free day offers every start the service can finish in', async () => {
+  await reset();
+  const free = await freeTimes('hair-cut-women', day);   // 60 min + 10 buffer
+  eq(free.length, 45, '10:00 to 21:00 every 15 minutes');
+  eq(free[0], '10:00');
+  eq(free[free.length - 1], '21:00', 'must finish by 22:00');
+});
+
+await test('a longer service gets fewer starts', async () => {
+  const free = await freeTimes('makeup-occasion', day);  // 120 min
+  eq(free[free.length - 1], '20:00', '120 minutes must finish by 22:00');
+  eq(free.length, 41);
+});
+
+await test('an existing booking disappears from availability', async () => {
+  await reset();
+  const r = await book('hair-cut-women', day, '17:00');
+  ok(r.ok === true, 'setup booking failed: ' + JSON.stringify(r));
+
+  const rows = await slots('hair-cut-women', day);
+  const byTime = Object.fromEntries(rows.map(x => [x.t, x]));
+  eq(byTime['17:00'].available, false, '17:00 is gone');
+  eq(byTime['17:00'].reason, 'booked', 'and it says why');
+  eq(byTime['16:00'].available, false, '16:00 would overlap');
+  eq(byTime['18:00'].available, false, '18:00 starts inside the block');
+  eq(byTime['15:45'].available, true, '15:45 finishes at 16:45');
+  eq(byTime['18:15'].available, true, '18:15 clears the 10-minute buffer');
+});
+
+await test('the buffer, not just the duration, decides the next start', async () => {
+  await reset();
+  // 60-minute service + 10-minute turnaround from 17:00 blocks to 18:10.
+  await book('hair-cut-women', day, '17:00');
+  const free = await freeTimes('hair-cut-women', day);
+  ok(!free.includes('18:00'), '18:00 is still inside the block');
+  ok(free.includes('18:15'), '18:15 is the first clear start on the grid');
+});
+
+await test('adjacent appointments are both allowed', async () => {
+  await reset();
+  // spa-classic is 60 minutes plus a 15-minute turnaround, so its block
+  // is 75 minutes: a whole number of 15-minute grid steps. A 12:00
+  // booking therefore ends exactly on an offered start, 13:15.
+  const a = await book('spa-classic', day, '12:00');     // blocks 12:00-13:15
+  eq(a.ok, true, JSON.stringify(a));
+
+  // Everything inside the block is still refused...
+  const inside = await book('spa-classic', day, '13:00', { email: 'inside@example.com' });
+  eq(inside.ok, false, '13:00 is still inside the first block');
+  eq(inside.reason, 'slot_taken');
+
+  // ...and the instant it ends is free, because the ranges are half-open.
+  const b = await book('spa-classic', day, '13:15', { email: 'second@example.com' });
+  eq(b.ok, true, 'a booking starting exactly when the last one ends must succeed: ' + JSON.stringify(b));
+
+  // The grid the customer is shown agrees with what the server accepts.
+  await reset();
+  await book('spa-classic', day, '12:00');
+  const free = await freeTimes('spa-classic', day);
+  ok(!free.includes('13:00'), 'availability must not offer 13:00');
+  ok(free.includes('13:15'), 'availability must offer 13:15');
+});
+
+await test('a block that does not divide into the grid simply loses the gap', async () => {
+  // wax-threading is 20 + 5 = 25 minutes, which is not a whole number of
+  // 15-minute steps. A 14:00 booking runs to 14:25, and the next offered
+  // start is 14:30 rather than 14:25 -- the grid stays predictable and
+  // five minutes go unused. This is a deliberate trade, so it is pinned
+  // down here rather than left to be discovered later.
+  await reset();
+  const a = await book('wax-threading', day, '14:00');
+  eq(a.ok, true, JSON.stringify(a));
+
+  const offGrid = await book('wax-threading', day, '14:25', { email: 'x@example.com' });
+  eq(offGrid.ok, false, '14:25 is never offered, so it is refused');
+  eq(offGrid.reason, 'off_grid');
+
+  const free = await freeTimes('wax-threading', day);
+  ok(!free.includes('14:15'), '14:15 would overlap');
+  ok(free.includes('14:30'), '14:30 is the next offered start');
+});
+
+await test('a booking on one resource does not block another', async () => {
+  await reset();
+  await book('hair-cut-women', day, '17:00');                    // styling chair
+  const nails = await freeTimes('mani-classic', day);            // nail station
+  ok(nails.includes('17:00'), 'a manicure should still be available at 17:00');
+});
+
+await test('past dates offer nothing', async () => {
+  const rows = await slots('hair-cut-women', yesterday);
+  ok(rows.length > 0, 'yesterday should still enumerate the day');
+  ok(rows.every(r => r.available === false && r.reason === 'past'),
+     'every slot yesterday must be marked past');
+});
+
+await test('lead time pushes out the earliest bookable slot today', async () => {
+  // Force a 24-hour notice period: nothing today can qualify.
+  await db.exec(`update public.salon_settings set lead_time_minutes = 1440 where id`);
+  const rows = await slots('hair-cut-women', today);
+  ok(rows.every(r => r.available === false),
+     'with 24 hours of notice required, today must be fully unavailable');
+  ok(rows.every(r => r.reason === 'past'), 'and the reason is that they are too soon');
+  await db.exec(`update public.salon_settings set lead_time_minutes = 60 where id`);
+});
+
+await test('a closed day returns no slots at all', async () => {
+  await db.exec(`update public.opening_hours set opens = null, closes = null where weekday = 6`);
+  const sunday = (await one(
+    `select (select d::text from generate_series($1::date, $1::date + 7, '1 day') d
+              where extract(isodow from d) = 7 limit 1) as d`, [day])).d;
+  const rows = await slots('hair-cut-women', sunday);
+  eq(rows.length, 0, 'a closed weekday enumerates nothing');
+  await db.exec(`update public.opening_hours set opens='10:00', closes='22:00' where weekday = 6`);
+});
+
+await test('a closure blocks the resource it names', async () => {
+  await reset();
+  await db.exec(
+    `insert into public.closures (resource_id, starts_at, ends_at, reason)
+     values ('styling-chair-1',
+             ('${day}'::date + time '13:00') at time zone 'Asia/Kolkata',
+             ('${day}'::date + time '15:00') at time zone 'Asia/Kolkata',
+             'maintenance')`);
+  const free = await freeTimes('hair-cut-women', day);
+  ok(!free.includes('13:00'), 'inside the closure');
+  ok(!free.includes('14:30'), 'still inside the closure');
+  ok(free.includes('15:00'), 'immediately after it');
+  const nails = await freeTimes('mani-classic', day);
+  ok(nails.includes('13:00'), 'the nail station is unaffected');
+  await reset();
+});
+
+/* ==================================================================
+   EXCLUSIVITY
+   ================================================================== */
+group('Exclusivity');
+
+await test('a valid appointment is created and returned with a reference', async () => {
+  await reset();
+  const r = await book('hair-cut-women', day, '17:00');
+  eq(r.ok, true, JSON.stringify(r));
+  ok(/^VRR-[A-F0-9]{6}$/.test(r.reference), 'unexpected reference: ' + r.reference);
+  eq(r.serviceMinutes, 60);
+  eq(r.status, 'pending');
+  eq(r.startsAt.slice(-5), '17:00');
+  eq(r.endsAt.slice(-5), '18:00', 'the customer is told the service end, not the buffer end');
+
+  const row = await one(`select * from public.bookings where reference = $1`, [r.reference]);
+  eq(row.resource_id, 'styling-chair-1');
+  eq(row.duration_minutes, 60);
+  eq(row.buffer_minutes, 10);
+});
+
+await test('the same slot cannot be booked twice', async () => {
+  await reset();
+  const first = await book('hair-cut-women', day, '17:00');
+  eq(first.ok, true);
+  const second = await book('hair-cut-women', day, '17:00', { email: 'other@example.com' });
+  eq(second.ok, false, 'the second booking must be refused');
+  eq(second.reason, 'slot_taken');
+  const n = await one(`select count(*)::int as n from public.bookings where status <> 'cancelled'`);
+  eq(n.n, 1, 'exactly one appointment should exist');
+});
+
+await test('an overlapping — not identical — slot is also refused', async () => {
+  await reset();
+  await book('hair-cut-women', day, '17:00');                       // blocks 17:00-18:10
+  const overlap = await book('hair-cut-women', day, '17:30', { email: 'other@example.com' });
+  eq(overlap.ok, false, 'a 17:30 start overlaps a 17:00-18:00 service');
+  eq(overlap.reason, 'slot_taken');
+
+  const before = await book('hair-cut-women', day, '16:30', { email: 'third@example.com' });
+  eq(before.ok, false, '16:30 would run to 17:30, into the existing booking');
+});
+
+await test('a stale selection is rejected at submit time', async () => {
+  // Models two customers on the page at once: both saw 17:00 free.
+  await reset();
+  const freeBefore = await freeTimes('hair-cut-women', day);
+  ok(freeBefore.includes('17:00'), 'both customers see 17:00');
+
+  await book('hair-cut-women', day, '17:00');                       // customer A commits
+
+  // Customer B submits the slot they loaded a minute ago.
+  const stale = await book('hair-cut-women', day, '17:00', { email: 'b@example.com' });
+  eq(stale.ok, false, 'the stale submission must not succeed');
+  eq(stale.reason, 'slot_taken');
+
+  const freeAfter = await freeTimes('hair-cut-women', day);
+  ok(!freeAfter.includes('17:00'), 'and the refreshed grid no longer offers it');
+});
+
+await test('the database itself refuses an overlap, not just the function', async () => {
+  await reset();
+  const r = await book('hair-cut-women', day, '17:00');
+  const row = await one(`select * from public.bookings where reference = $1`, [r.reference]);
+
+  // Bypass create_booking entirely: this is the protection that holds
+  // when two transactions race, or when some other tool writes a row.
+  let code = null;
+  try {
+    await db.query(
+      `insert into public.bookings
+         (reference, service_id, resource_id, starts_at, ends_at, service_ends_at,
+          duration_minutes, buffer_minutes, customer_name, customer_phone, customer_email)
+       values ('VRR-RAW001', 'hair-cut-women', $1, $2, $3, $4, 60, 10, 'Race', '+919820000000', 'race@example.com')`,
+      [row.resource_id,
+       new Date(new Date(row.starts_at).getTime() + 30 * 60000),
+       new Date(new Date(row.starts_at).getTime() + 100 * 60000),
+       new Date(new Date(row.starts_at).getTime() + 90 * 60000)]);
+  } catch (e) {
+    code = e.message || String(e);
+  }
+  ok(code, 'a raw overlapping insert must be rejected by the constraint');
+  ok(/conflicting key value|exclusion constraint|bookings_no_overlap/i.test(code),
+     'rejected, but not by the exclusion constraint: ' + code);
+});
+
+await test('two different services on the same chair still cannot overlap', async () => {
+  await reset();
+  await book('hair-cut-women', day, '17:00');                       // 60 + 10
+  const other = await book('groom-shave', day, '17:30', { email: 'o@example.com' }); // 30 + 10
+  eq(other.ok, false, 'a shave cannot start inside a haircut on the same chair');
+  eq(other.reason, 'slot_taken');
+});
+
+/* ==================================================================
+   CANCELLATION
+   ================================================================== */
+group('Cancellation');
+
+await test('cancelling releases the slot', async () => {
+  await reset();
+  const r = await book('hair-cut-women', day, '17:00');
+  ok(!(await freeTimes('hair-cut-women', day)).includes('17:00'), 'taken while live');
+
+  const c = await one(`select public.cancel_booking($1, $2) as r`, [r.reference, 'priya@example.com']);
+  eq(c.r.ok, true, JSON.stringify(c.r));
+
+  ok((await freeTimes('hair-cut-women', day)).includes('17:00'), 'free again once cancelled');
+
+  const again = await book('hair-cut-women', day, '17:00', { email: 'next@example.com' });
+  eq(again.ok, true, 'and somebody else can take it: ' + JSON.stringify(again));
+});
+
+await test('cancelling needs the right reference and email', async () => {
+  await reset();
+  const r = await book('hair-cut-women', day, '17:00');
+
+  const wrongEmail = await one(`select public.cancel_booking($1, $2) as r`,
+                               [r.reference, 'someone.else@example.com']);
+  eq(wrongEmail.r.ok, false, 'the wrong email must not cancel someone else\'s appointment');
+  eq(wrongEmail.r.reason, 'not_found');
+
+  const wrongRef = await one(`select public.cancel_booking($1, $2) as r`,
+                             ['VRR-NOPE12', 'priya@example.com']);
+  eq(wrongRef.r.ok, false);
+
+  ok(!(await freeTimes('hair-cut-women', day)).includes('17:00'),
+     'the appointment is still held after the failed attempts');
+});
+
+await test('a cancelled appointment stays on record', async () => {
+  await reset();
+  const r = await book('hair-cut-women', day, '17:00');
+  await one(`select public.cancel_booking($1, $2) as r`, [r.reference, 'priya@example.com']);
+  const row = await one(`select status, cancelled_at from public.bookings where reference = $1`,
+                        [r.reference]);
+  eq(row.status, 'cancelled');
+  ok(row.cancelled_at, 'cancelled_at should be stamped');
+});
+
+/* ==================================================================
+   VALIDATION
+   ================================================================== */
+group('Validation');
+
+await test('an unknown service id is rejected outright', async () => {
+  let threw = null;
+  try { await book('not-a-real-service', day, '17:00'); }
+  catch (e) { threw = e.message || String(e); }
+  ok(threw, 'an unknown service must raise');
+  ok(/unknown_service/.test(threw), 'wrong error: ' + threw);
+
+  let threw2 = null;
+  try { await slots('not-a-real-service', day); }
+  catch (e) { threw2 = e.message || String(e); }
+  ok(/unknown_service/.test(threw2 || ''), 'availability must reject it too: ' + threw2);
+});
+
+await test('a service that is not bookable online is rejected', async () => {
+  let threw = null;
+  try { await book('tattoo-small', day, '17:00'); }
+  catch (e) { threw = e.message || String(e); }
+  ok(/unknown_service/.test(threw || ''),
+     'tattoo-small is seeded as bookable=false and must not be reservable: ' + threw);
+});
+
+await test('bad contact details are refused with a specific reason', async () => {
+  await reset();
+  eq((await book('hair-cut-women', day, '17:00', { name: 'A' })).reason, 'invalid_name');
+  eq((await book('hair-cut-women', day, '17:00', { name: '   ' })).reason, 'invalid_name');
+  eq((await book('hair-cut-women', day, '17:00', { phone: 'call me' })).reason, 'invalid_phone');
+  eq((await book('hair-cut-women', day, '17:00', { phone: '123' })).reason, 'invalid_phone');
+  eq((await book('hair-cut-women', day, '17:00', { email: 'nope' })).reason, 'invalid_email');
+  eq((await book('hair-cut-women', day, '17:00', { email: 'a@b' })).reason, 'invalid_email');
+
+  const n = await one(`select count(*)::int as n from public.bookings`);
+  eq(n.n, 0, 'nothing should have been stored by any of those');
+});
+
+await test('input is cleaned before it is stored', async () => {
+  await reset();
+  const r = await book('hair-cut-women', day, '17:00', {
+    name: '  Priya   Shah  ', phone: '+91 98200-12345', email: '  PRIYA@Example.COM '
+  });
+  eq(r.ok, true, JSON.stringify(r));
+  const row = await one(`select * from public.bookings where reference = $1`, [r.reference]);
+  eq(row.customer_name, 'Priya Shah', 'whitespace collapsed');
+  eq(row.customer_phone, '+919820012345', 'formatting stripped');
+  eq(row.customer_email, 'priya@example.com', 'lower-cased');
+});
+
+await test('a time outside opening hours is refused', async () => {
+  await reset();
+  eq((await book('hair-cut-women', day, '09:00')).reason, 'closed', 'before opening');
+  eq((await book('hair-cut-women', day, '21:30')).reason, 'closed',
+     'a 60-minute service at 21:30 would run past 22:00');
+});
+
+await test('a time off the published grid is refused', async () => {
+  await reset();
+  const r = await book('hair-cut-women', day, '17:07');
+  eq(r.ok, false, 'a crafted off-grid time must not be accepted');
+  eq(r.reason, 'off_grid');
+});
+
+await test('a time in the past is refused', async () => {
+  await reset();
+  const r = await book('hair-cut-women', yesterday, '17:00');
+  eq(r.ok, false);
+  eq(r.reason, 'past');
+});
+
+await test('a date beyond the booking horizon is refused', async () => {
+  await reset();
+  const far = (await one(
+    `select (((now() at time zone 'Asia/Kolkata')::date) + 400)::text as d`)).d;
+  const r = await book('hair-cut-women', far, '17:00');
+  eq(r.ok, false);
+  eq(r.reason, 'outside_window');
+});
+
+await test('one email cannot hoard a day', async () => {
+  await reset();
+  // The seeded cap is 3 live bookings per email per day.
+  for (const t of ['10:00', '12:00', '14:00']) {
+    const r = await book('hair-cut-women', day, t);
+    eq(r.ok, true, `setup booking at ${t} failed: ` + JSON.stringify(r));
+  }
+  const fourth = await book('hair-cut-women', day, '16:00');
+  eq(fourth.ok, false);
+  eq(fourth.reason, 'too_many_live_bookings');
+
+  // A different customer is unaffected.
+  const other = await book('hair-cut-women', day, '16:00', { email: 'someone@example.com' });
+  eq(other.ok, true, 'the cap is per email, not global: ' + JSON.stringify(other));
+});
+
+/* ==================================================================
+   SALON-LOCAL TIME
+   ================================================================== */
+group('Salon-local time');
+
+await test('a 17:00 booking is stored as 17:00 in Mumbai, not in UTC', async () => {
+  await reset();
+  const r = await book('hair-cut-women', day, '17:00');
+  const row = await one(
+    `select to_char(starts_at at time zone 'UTC', 'YYYY-MM-DD HH24:MI') as utc,
+            to_char(starts_at at time zone 'Asia/Kolkata', 'YYYY-MM-DD HH24:MI') as ist,
+            to_char(ends_at   at time zone 'Asia/Kolkata', 'HH24:MI') as ist_end
+       from public.bookings where reference = $1`, [r.reference]);
+
+  eq(row.ist, `${day} 17:00`, 'local time is what the customer picked');
+  // Mumbai is UTC+5:30, so 17:00 IST is 11:30 UTC the same day.
+  eq(row.utc, `${day} 11:30`, 'stored instant is offset by 5:30');
+  eq(row.ist_end, '18:10', 'the block runs 60 minutes of service plus 10 of turnaround');
+});
+
+await test('the day boundary is the salon\'s, not the server\'s', async () => {
+  // 21:00 IST is 15:30 UTC the same day; a naive UTC-based implementation
+  // would be fine here, but 00:30 IST would belong to the previous UTC day.
+  await reset();
+  const r = await book('hair-cut-women', day, '21:00');
+  eq(r.ok, true, JSON.stringify(r));
+  const row = await one(
+    `select (starts_at at time zone 'Asia/Kolkata')::date::text as local_date,
+            (starts_at at time zone 'UTC')::date::text as utc_date
+       from public.bookings where reference = $1`, [r.reference]);
+  eq(row.local_date, day, 'the appointment belongs to the day the customer chose');
+});
+
+await test('availability is reported in salon-local times', async () => {
+  const rows = await slots('hair-cut-women', day);
+  eq(rows[0].t, '10:00', 'the day starts when the salon opens, locally');
+});
+
+/* ==================================================================
+   DONE
+   ================================================================== */
+await reset();
+
+note += 'PGlite runs a single connection, so genuinely simultaneous transactions ' +
+        'cannot be executed here. What is verified instead: create_booking refuses a ' +
+        'slot that is already taken, and the EXCLUDE constraint rejects an overlapping ' +
+        'row inserted directly, which is the mechanism that makes a real race safe.';
+report(note.trim());
+</script>
+</body>
+</html>

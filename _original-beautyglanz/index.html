@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Beauty Glanz — Nagelstudio & Kosmetik in Kassel | Meisterin Anna</title>
+<link rel="icon" href="/favicon.ico?v=2" type="image/x-icon">
+<meta name="description" content="Maniküre, Pediküre, Permanent Make-up und Wimpernverlängerung bei Meisterin Anna in Kassel. Online in 60 Sekunden buchen. Theaterstraße 3, Mo bis Sa.">
+<meta name="theme-color" content="#15161A">
+
+<link rel="preload" as="image" href="assets/images/hero/flower.png" fetchpriority="high">
+<link rel="preload" as="image" href="assets/images/shared/logo_optimized.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400;1,6..96,500&family=Jost:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+<script>
+/* Palette tokens mirrored into Tailwind so the classes main.js injects
+   (text-rose, bg-cream-dark/40, text-espresso/70 …) land on the new system. */
+tailwind.config={theme:{extend:{colors:{
+  cream:'#EFEAE4', 'cream-dark':'#E6DFD6', espresso:'#15161A',
+  rose:'#9C6750', 'rose-light':'#C9977A', 'rose-dark':'#7A4E3C'
+},fontFamily:{heading:['"Bodoni Moda"','serif'],body:['"Jost"','sans-serif']}}}};
+</script>
+<link rel="stylesheet" href="assets/css/style.css">
+
+<meta property="og:title" content="Beauty Glanz — Nagelstudio & Kosmetik in Kassel">
+<meta property="og:description" content="Maniküre, Pediküre, Permanent Make-up & Wimpern bei Meisterin Anna. Online buchen.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/images/hero/flower.png">
+
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org","@type":"BeautySalon",
+  "name":"Beauty Glanz",
+  "image":"assets/images/clinic/clinic-1.jpg",
+  "priceRange":"€€",
+  "address":{"@type":"PostalAddress","streetAddress":"Theaterstraße 3","addressLocality":"Kassel","postalCode":"34117","addressCountry":"DE"},
+  "telephone":"+4917675881485",
+  "email":"Beauty.Glanz@web.de",
+  "url":"https://beautyglanz.de",
+  "sameAs":["https://instagram.com/beautyglanz_26"],
+  "openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],"opens":"10:00","closes":"18:00"}],
+  "aggregateRating":{"@type":"AggregateRating","ratingValue":"5","reviewCount":"3"}
+}
+</script>
+</head>
+<body class="has-bar">
+
+<!-- PRELOADER -->
+<div id="preloader">
+  <img src="assets/images/shared/logo_optimized.png" alt="">
+  <div class="pf-line"><i></i></div>
+</div>
+
+<!-- LANGUAGE SWITCHER -->
+<div class="lang-switcher" id="langSwitcher">
+  <div class="lang-dropdown" id="langDropdown">
+    <div class="lang-option active" data-lang="de" onclick="selectLang('de')">Deutsch</div>
+    <div class="lang-option" data-lang="ru" onclick="selectLang('ru')">Русский</div>
+    <div class="lang-option" data-lang="en" onclick="selectLang('en')">English</div>
+  </div>
+  <div class="lang-current" onclick="document.getElementById('langSwitcher').classList.toggle('open')">
+    <span id="langLabel">DE</span>
+    <svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header id="mainHeader">
+  <div class="hdr-in">
+    <a href="#" class="hdr-logo" aria-label="Beauty Glanz">
+      <img src="assets/images/shared/logo_optimized.png" alt="Beauty Glanz" decoding="async">
+    </a>
+    <nav class="hdr-nav">
+      <a href="#about" class="nav-a" data-de="Über mich" data-ru="Обо мне" data-en="About">Über mich</a>
+      <a href="#services" class="nav-a" data-de="Preise" data-ru="Цены" data-en="Prices">Preise</a>
+      <a href="#gallery" class="nav-a" data-de="Galerie" data-ru="Галерея" data-en="Gallery">Galerie</a>
+      <a href="#reviews" class="nav-a" data-de="Bewertungen" data-ru="Отзывы" data-en="Reviews">Bewertungen</a>
+      <a href="#contact" class="nav-a" data-de="Kontakt" data-ru="Контакт" data-en="Contact">Kontakt</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:14px">
+      <a href="#booking" class="btn" id="hdrBook"><span data-de="Termin buchen" data-ru="Записаться" data-en="Book now">Termin buchen</span></a>
+      <button class="burger" aria-label="Menü" onclick="document.getElementById('mobileOverlay').classList.add('open')">
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- MOBILE MENU -->
+<div id="mobileOverlay" class="mobile-overlay">
+  <button class="close-btn" aria-label="Schließen" onclick="document.getElementById('mobileOverlay').classList.remove('open')">&times;</button>
+  <a href="#about" onclick="closeMobile()" data-de="Über mich" data-ru="Обо мне" data-en="About">Über mich</a>
+  <a href="#services" onclick="closeMobile()" data-de="Preise" data-ru="Цены" data-en="Prices">Preise</a>
+  <a href="#gallery" onclick="closeMobile()" data-de="Galerie" data-ru="Галерея" data-en="Gallery">Galerie</a>
+  <a href="#reviews" onclick="closeMobile()" data-de="Bewertungen" data-ru="Отзывы" data-en="Reviews">Bewertungen</a>
+  <a href="#booking" onclick="closeMobile()" data-de="Termin buchen" data-ru="Записаться" data-en="Book now">Termin buchen</a>
+  <a href="#contact" onclick="closeMobile()" data-de="Kontakt" data-ru="Контакт" data-en="Contact">Kontakt</a>
+  <div class="m-actions">
+    <button onclick="selectLang('de'); closeMobile()" class="lang-mobile-option de">DE</button>
+    <button onclick="selectLang('ru'); closeMobile()" class="lang-mobile-option ru">RU</button>
+    <button onclick="selectLang('en'); closeMobile()" class="lang-mobile-option en">EN</button>
+    <a href="/admin.html" class="lang-mobile-option" style="font-family:var(--sans);font-size:var(--t-micro)">Admin</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-panel">
+    <p class="hero-kicker" data-de="Nagelstudio und Kosmetik in Kassel" data-ru="Студия ногтей и косметологии в Касселе" data-en="Nail studio and beauty in Kassel">Nagelstudio und Kosmetik in Kassel</p>
+
+    <h1 class="hero-word" aria-label="Beauty Glanz">
+      <span class="ln"><span class="hero-foil">Beauty</span></span>
+      <span class="ln"><span class="hero-foil">Glanz</span></span>
+    </h1>
+
+    <p class="hero-desc" data-de="Maniküre, Pediküre, Permanent Make-up und Wimpern bei Meisterin Anna. Vierzehn Jahre Handwerk, ein Stuhl, volle Aufmerksamkeit." data-ru="Маникюр, педикюр, перманентный макияж и ресницы у мастера Анны. Четырнадцать лет ремесла, одно кресло, полное внимание." data-en="Manicure, pedicure, permanent make-up and lashes by master Anna. Fourteen years of craft, one chair, undivided attention.">Maniküre, Pediküre, Permanent Make-up und Wimpern bei Meisterin Anna. Vierzehn Jahre Handwerk, ein Stuhl, volle Aufmerksamkeit.</p>
+
+    <div class="hero-cta">
+      <a href="#booking" class="btn"><span data-de="Termin buchen" data-ru="Записаться" data-en="Book appointment">Termin buchen</span></a>
+    </div>
+
+    <dl class="hero-facts">
+      <div class="hero-fact">
+        <dt data-de="Öffnungszeiten" data-ru="Часы работы" data-en="Opening hours">Öffnungszeiten</dt>
+        <dd data-de="Mo bis Sa, 10 bis 18 Uhr" data-ru="Пн–Сб, 10:00–18:00" data-en="Mon to Sat, 10am to 6pm">Mo bis Sa, 10 bis 18 Uhr</dd>
+      </div>
+      <div class="hero-fact">
+        <dt data-de="Studio" data-ru="Студия" data-en="Studio">Studio</dt>
+        <dd>Theaterstraße 3, Kassel</dd>
+      </div>
+      <div class="hero-fact">
+        <dt data-de="Beratung auf" data-ru="Консультация на" data-en="We speak">Beratung auf</dt>
+        <dd>Deutsch, Русский, English</dd>
+      </div>
+    </dl>
+
+    <div class="hero-cue"><i></i><span data-de="Weiter" data-ru="Далее" data-en="Scroll">Weiter</span></div>
+  </div>
+
+  <div class="hero-stage">
+    <span class="hero-seam" aria-hidden="true"></span>
+    <img src="assets/images/hero/flower.png" alt="Kundin im Studio Beauty Glanz" id="heroImg" fetchpriority="high" decoding="async">
+  </div>
+</section>
+
+<!-- TREATMENT MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-mask">
+    <div class="marquee-track" id="marqueeTrack">
+      <div class="marquee-group">
+        <span class="marquee-item" data-de="Maniküre" data-ru="Маникюр" data-en="Manicure">Maniküre</span><i class="marquee-dot"></i>
+        <span class="marquee-item" data-de="Pediküre" data-ru="Педикюр" data-en="Pedicure">Pediküre</span><i class="marquee-dot"></i>
+        <span class="marquee-item" data-de="Permanent Make-up" data-ru="Перманентный макияж" data-en="Permanent make-up">Permanent Make-up</span><i class="marquee-dot"></i>
+        <span class="marquee-item" data-de="Wimpernverlängerung" data-ru="Наращивание ресниц" data-en="Lash extensions">Wimpernverlängerung</span><i class="marquee-dot"></i>
+        <span class="marquee-item" data-de="Augenbrauen" data-ru="Брови" data-en="Brows">Augenbrauen</span><i class="marquee-dot"></i>
+        <span class="marquee-item" data-de="Waxing" data-ru="Воск" data-en="Waxing">Waxing</span><i class="marquee-dot"></i>
+        <span class="marquee-item" data-de="Nageldesign" data-ru="Дизайн ногтей" data-en="Nail design">Nageldesign</span><i class="marquee-dot"></i>
+      </div>
+      <div class="marquee-group">
+        <span class="marquee-item" data-de="Maniküre" data-ru="Маникюр" data-en="Manicure">Maniküre</span><i class="marquee-dot"></i>
+        <span class="marquee-item" data-de="Pediküre" data-ru="Педикюр" data-en="Pedicure">Pediküre</span><i class="marquee-dot"></i>
+        <span class="marquee-item" data-de="Permanent Make-up" data-ru="Перманентный макияж" data-en="Permanent make-up">Permanent Make-up</span><i class="marquee-dot"></i>
+        <span class="marquee-item" data-de="Wimpernverlängerung" data-ru="Наращивание ресниц" data-en="Lash extensions">Wimpernverlängerung</span><i class="marquee-dot"></i>
+        <span class="marquee-item" data-de="Augenbrauen" data-ru="Брови" data-en="Brows">Augenbrauen</span><i class="marquee-dot"></i>
+        <span class="marquee-item" data-de="Waxing" data-ru="Воск" data-en="Waxing">Waxing</span><i class="marquee-dot"></i>
+        <span class="marquee-item" data-de="Nageldesign" data-ru="Дизайн ногтей" data-en="Nail design">Nageldesign</span><i class="marquee-dot"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRUST ROW -->
+<dl class="trust">
+  <div class="trust-cell reveal">
+    <dt><span class="count" data-to="14">14</span>+</dt>
+    <dd data-de="Jahre am Handwerk" data-ru="лет в профессии" data-en="years at the craft">Jahre am Handwerk</dd>
+  </div>
+  <div class="trust-cell reveal stagger-1">
+    <dt><span class="count" data-to="5000" data-sep="1">5000</span></dt>
+    <dd data-de="Termine seit der Eröffnung" data-ru="приёмов с момента открытия" data-en="appointments since opening">Termine seit der Eröffnung</dd>
+  </div>
+  <div class="trust-cell reveal stagger-2">
+    <dt><span class="count" data-to="60">60</span>&thinsp;s</dt>
+    <dd data-de="bis der Termin steht" data-ru="и запись готова" data-en="to a confirmed booking">bis der Termin steht</dd>
+  </div>
+  <div class="trust-cell reveal stagger-3">
+    <dt><span class="count" data-to="3">3</span></dt>
+    <dd data-de="Sprachen im Studio" data-ru="языка в студии" data-en="languages in the studio">Sprachen im Studio</dd>
+  </div>
+</dl>
+
+<!-- STATEMENT -->
+<section id="intro" class="sec statement">
+  <img src="assets/images/hero/hands2.png" alt="" id="introImgLeft" class="hand-left" decoding="async" loading="lazy">
+  <img src="assets/images/hero/hands1.png" alt="" id="introImgRight" class="hand-right" decoding="async" loading="lazy">
+  <div class="wrap">
+    <div class="statement-in">
+      <h2 class="d1 split" id="introTitle" data-de="Schönheit, die von innen strahlt" data-ru="Красота, которая сияет изнутри" data-en="Beauty that radiates from within">Schönheit, die von innen strahlt</h2>
+      <p class="lede reveal" id="introDesc" data-de="Im Herzen Kassels verwandeln wir Ihre Schönheitswünsche in Realität. Unser Studio bietet Ihnen eine Oase der Ruhe, in der Präzision und Kreativität aufeinandertreffen." data-ru="В самом сердце Касселя мы воплощаем ваши мечты о красоте в реальность. Наша студия — оазис спокойствия, где точность встречается с креативностью." data-en="In the heart of Kassel we turn what you picture into something real. The studio is a quiet room where precision meets craft.">Im Herzen Kassels verwandeln wir Ihre Schönheitswünsche in Realität. Unser Studio bietet Ihnen eine Oase der Ruhe, in der Präzision und Kreativität aufeinandertreffen.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="sec">
+  <div class="wrap">
+    <div class="about-grid">
+      <div class="about-copy">
+        <h2 class="d1 split" data-de="Meisterin Anna" data-ru="Мастер Анна" data-en="Master Anna">Meisterin Anna</h2>
+        <p class="lede reveal mt-m" data-de="Seit über vierzehn Jahren arbeite ich in der Schönheitsbranche. Ich nehme eine Kundin zur Zeit, damit jede Behandlung die Ruhe bekommt, die sie braucht. Was dabei entsteht, soll noch Wochen später gut aussehen." data-ru="Более четырнадцати лет я работаю в индустрии красоты. Я принимаю одну клиентку за раз, чтобы каждая процедура получила нужное спокойствие. Результат должен хорошо выглядеть и спустя недели." data-en="I have worked in beauty for more than fourteen years. I take one client at a time so every treatment gets the calm it needs. What we make should still look right weeks later.">Seit über vierzehn Jahren arbeite ich in der Schönheitsbranche. Ich nehme eine Kundin zur Zeit, damit jede Behandlung die Ruhe bekommt, die sie braucht. Was dabei entsteht, soll noch Wochen später gut aussehen.</p>
+        <p class="about-sig reveal stagger-2">Anna</p>
+
+        <dl class="stats reveal stagger-3">
+          <div class="stat">
+            <b><span class="count" data-to="14">14</span>+</b>
+            <span data-de="Jahre Erfahrung" data-ru="лет опыта" data-en="years experience">Jahre Erfahrung</span>
+          </div>
+          <div class="stat">
+            <b><span class="count" data-to="5000" data-sep="1">5000</span></b>
+            <span data-de="zufriedene Kundinnen" data-ru="довольных клиентов" data-en="happy clients">zufriedene Kundinnen</span>
+          </div>
+          <div class="stat">
+            <b><span class="count" data-to="20">20</span>+</b>
+            <span data-de="Behandlungen im Angebot" data-ru="процедур в меню" data-en="treatments offered">Behandlungen im Angebot</span>
+          </div>
+        </dl>
+      </div>
+
+      <div id="aboutPhotoWrap">
+        <span class="about-halo" aria-hidden="true"></span>
+        <img src="assets/images/about/anna.png" alt="Anna, Inhaberin von Beauty Glanz" class="reveal" decoding="async" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CLINIC -->
+<section id="clinic" class="sec on-shell-2">
+  <div class="wrap">
+    <div class="clinic-grid">
+      <div>
+        <h2 class="d2 split" data-de="Hier entsteht Schönheit" data-ru="Здесь рождается красота" data-en="Where the work happens">Hier entsteht Schönheit</h2>
+        <p class="lede reveal mt-m" data-de="Ein Behandlungsraum, moderne Ausstattung und genug Platz, um durchzuatmen. Kein Durchlauf, keine Warteschlange." data-ru="Один кабинет, современное оборудование и достаточно места, чтобы выдохнуть. Без потока и без очередей." data-en="One treatment room, current equipment, and enough space to breathe. No conveyor belt, no queue.">Ein Behandlungsraum, moderne Ausstattung und genug Platz, um durchzuatmen. Kein Durchlauf, keine Warteschlange.</p>
+        <ul class="clinic-list reveal stagger-2">
+          <li data-de="Hygiene nach den Vorgaben des Robert-Koch-Instituts" data-ru="Гигиена по стандартам Института Роберта Коха" data-en="Hygiene to Robert Koch Institute standards">Hygiene nach den Vorgaben des Robert-Koch-Instituts</li>
+          <li data-de="Jedes Werkzeug wird einzeln sterilisiert" data-ru="Каждый инструмент стерилизуется отдельно" data-en="Every tool sterilised individually">Jedes Werkzeug wird einzeln sterilisiert</li>
+          <li data-de="Beratung vor jeder ersten Behandlung" data-ru="Консультация перед каждой первой процедурой" data-en="A consultation before every first treatment">Beratung vor jeder ersten Behandlung</li>
+        </ul>
+      </div>
+      <div class="reveal stagger-2">
+        <div id="clinicSlider" onclick="openLightbox(this)" data-src="assets/images/clinic/clinic-1.jpg">
+          <img id="clinicSlide0" src="assets/images/clinic/clinic-1.jpg" class="opacity-100" loading="lazy" alt="Behandlungsraum" decoding="async">
+          <img id="clinicSlide1" src="assets/images/clinic/clinic-2.jpg" class="opacity-0" loading="lazy" alt="Studio" decoding="async">
+          <img id="clinicSlide2" src="assets/images/clinic/clinic-3.jpg" class="opacity-0" loading="lazy" alt="Arbeitsplatz" decoding="async">
+          <img id="clinicSlide3" src="assets/images/clinic/clinic-4.jpg" class="opacity-0" loading="lazy" alt="Empfang" decoding="async">
+        </div>
+        <div class="clinic-dots" id="clinicDots">
+          <button class="clinic-dot on" aria-label="Bild 1" onclick="changeClinicSlide(0, event)"></button>
+          <button class="clinic-dot" aria-label="Bild 2" onclick="changeClinicSlide(1, event)"></button>
+          <button class="clinic-dot" aria-label="Bild 3" onclick="changeClinicSlide(2, event)"></button>
+          <button class="clinic-dot" aria-label="Bild 4" onclick="changeClinicSlide(3, event)"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery" class="sec">
+  <div class="wrap">
+    <div class="sec-head center">
+      <h2 class="d1 split" data-de="Unsere Arbeiten" data-ru="Наши работы" data-en="Our work">Unsere Arbeiten</h2>
+    </div>
+    <div id="categoryPills"></div>
+    <div id="galleryPanels" class="reveal"></div>
+  </div>
+</section>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lb-close" aria-label="Schließen" onclick="closeLightbox(event)">&times;</button>
+  <div class="lightbox-content" id="lightboxInner"></div>
+</div>
+
+<!-- SERVICES & PRICES -->
+<section id="services" class="sec on-ink">
+  <div class="wrap wrap-n">
+    <div class="sec-head">
+      <h2 class="d1 split" data-de="Behandlungen und Preise" data-ru="Процедуры и цены" data-en="Treatments and prices">Behandlungen und Preise</h2>
+      <p class="lede reveal" style="margin-top:20px" data-de="Alle Preise verstehen sich inklusive Material und Beratung. Für aufwendiges Design kommt ein Aufpreis dazu, den wir vorher besprechen." data-ru="Все цены включают материалы и консультацию. За сложный дизайн предусмотрена доплата, которую мы обсуждаем заранее." data-en="Every price includes materials and the consultation. Elaborate design carries a surcharge we agree on beforehand.">Alle Preise verstehen sich inklusive Material und Beratung. Für aufwendiges Design kommt ein Aufpreis dazu, den wir vorher besprechen.</p>
+    </div>
+    <div id="accordionContainer"></div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section id="reviews" class="sec">
+  <div class="wrap">
+    <div class="sec-head center">
+      <h2 class="d1 split" data-de="Was unsere Kundinnen sagen" data-ru="Что говорят наши клиенты" data-en="What our clients say">Was unsere Kundinnen sagen</h2>
+    </div>
+    <div id="reviewsGrid"></div>
+  </div>
+</section>
+
+<!-- BOOKING -->
+<div class="toast-wrap" id="toastWrap"></div>
+<section id="booking" class="sec on-shell-2">
+  <div class="wrap wrap-t">
+    <div class="sec-head center">
+      <h2 class="d1 split" data-de="Termin vereinbaren" data-ru="Записаться на приём" data-en="Book an appointment">Termin vereinbaren</h2>
+      <p class="lede reveal" style="margin-top:18px" data-de="Behandlung wählen, Tag und Uhrzeit auswählen, fertig. Die Bestätigung kommt per E-Mail." data-ru="Выберите процедуру, день и время — и готово. Подтверждение придёт на почту." data-en="Pick a treatment, then a day and a time. The confirmation arrives by email.">Behandlung wählen, Tag und Uhrzeit auswählen, fertig. Die Bestätigung kommt per E-Mail.</p>
+    </div>
+
+    <div id="bookingStep1" class="reveal stagger-1">
+      <div class="booking-shell">
+        <form id="bookingForm" class="stack" onsubmit="bookingSubmit(event)">
+
+          <!-- STEP 1 — SERVICE -->
+          <div>
+            <p class="booking-step-label" data-de="Schritt 1: Behandlung" data-ru="Шаг 1: услуга" data-en="Step 1: treatment">Schritt 1: Behandlung</p>
+            <div id="svcPickerWrap"></div>
+            <input type="hidden" id="selectedServiceId" value="">
+            <input type="hidden" id="selectedServiceName" value="">
+          </div>
+
+          <!-- STEP 2 — DATE -->
+          <div class="booking-block locked" id="blockDate">
+            <p class="booking-step-label" data-de="Schritt 2: Datum" data-ru="Шаг 2: дата" data-en="Step 2: date">Schritt 2: Datum</p>
+            <div class="cal-box">
+              <div class="cal-header">
+                <button type="button" class="cal-nav" id="calPrev" aria-label="Vorheriger Monat">&#8249;</button>
+                <span class="cal-month-label" id="calMonthLabel"></span>
+                <button type="button" class="cal-nav" id="calNext" aria-label="Nächster Monat">&#8250;</button>
+              </div>
+              <div class="cal-weekdays" id="calWeekdays"></div>
+              <div class="cal-days" id="calDays"></div>
+            </div>
+            <input type="hidden" id="bookingDate" value="">
+          </div>
+
+          <!-- STEP 3 — TIME -->
+          <div class="booking-block locked" id="blockTime">
+            <p class="booking-step-label" data-de="Schritt 3: Uhrzeit" data-ru="Шаг 3: время" data-en="Step 3: time">Schritt 3: Uhrzeit</p>
+            <div id="timeGridWrap" class="time-grid"></div>
+            <p id="timeSlotsEmpty" class="hidden small" style="margin-top:12px;font-style:italic" data-de="Für diesen Tag ist nichts mehr frei." data-ru="На этот день свободных мест нет." data-en="Nothing left for this day.">Für diesen Tag ist nichts mehr frei.</p>
+            <input type="hidden" id="selectedTime" value="">
+          </div>
+
+          <!-- CONTACT -->
+          <div class="grid-2">
+            <div>
+              <label class="field-label" for="bookingName" data-de="Ihr Name" data-ru="Ваше имя" data-en="Your name">Ihr Name</label>
+              <input type="text" required class="form-input" id="bookingName" data-de-placeholder="Vor- und Nachname" data-ru-placeholder="Имя и фамилия" data-en-placeholder="First and last name" placeholder="Vor- und Nachname">
+            </div>
+            <div>
+              <label class="field-label" for="bookingPhone" data-de="Telefon" data-ru="Телефон" data-en="Phone">Telefon</label>
+              <input type="tel" required class="form-input" id="bookingPhone" data-de-placeholder="+49 176 ..." data-ru-placeholder="+49 176 ..." data-en-placeholder="+49 176 ..." placeholder="+49 176 ...">
+            </div>
+          </div>
+          <div>
+            <label class="field-label" for="bookingEmail" data-de="E-Mail" data-ru="Эл. почта" data-en="Email">E-Mail</label>
+            <input type="email" required class="form-input" id="bookingEmail" data-de-placeholder="ihre@email.de" data-ru-placeholder="ваша@почта.ru" data-en-placeholder="your@email.com" placeholder="ihre@email.de">
+          </div>
+          <div>
+            <label class="field-label" for="bookingNotes" data-de="Nachricht, optional" data-ru="Сообщение, необязательно" data-en="Message, optional">Nachricht, optional</label>
+            <textarea rows="3" id="bookingNotes" class="form-input" data-de-placeholder="Besondere Wünsche" data-ru-placeholder="Особые пожелания" data-en-placeholder="Anything we should know" placeholder="Besondere Wünsche"></textarea>
+          </div>
+          <button type="submit" class="cta-btn" style="width:100%;padding:17px 24px;background:var(--ink);color:var(--shell)" data-de="Termin buchen" data-ru="Записаться" data-en="Book appointment">Termin buchen</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div id="bookingSuccess" class="hidden">
+      <div class="booking-ok">
+        <div class="tick">&#10003;</div>
+        <h3 class="d3" style="color:var(--on-ink)" data-de="Termin gebucht" data-ru="Вы записаны" data-en="Appointment booked">Termin gebucht</h3>
+        <p class="small" style="color:var(--on-ink-2);margin-top:10px" data-de="Wir melden uns in Kürze zur Bestätigung." data-ru="Мы свяжемся с вами для подтверждения." data-en="We will be in touch shortly to confirm.">Wir melden uns in Kürze zur Bestätigung.</p>
+        <div id="bookingSummary"></div>
+        <p id="noEmailWarning" class="meta" style="margin-top:14px;color:var(--on-ink-3)" data-de="Keine Bestätigung im Postfach? Schreiben Sie uns kurz." data-ru="Нет подтверждения на почте? Напишите нам." data-en="No confirmation in your inbox? Send us a note.">Keine Bestätigung im Postfach? Schreiben Sie uns kurz.</p>
+        <button type="button" onclick="resetBooking()" class="btn" style="margin-top:26px;color:var(--on-ink);border-color:rgba(239,234,228,.4)" data-de="Neue Buchung" data-ru="Новая запись" data-en="New booking">Neue Buchung</button>
+      </div>
+    </div>
+
+    <!-- DIRECT CONTACT -->
+    <div class="mt-l center">
+      <p class="meta" data-de="Lieber direkt?" data-ru="Хотите напрямую?" data-en="Rather do it directly?">Lieber direkt?</p>
+      <div class="stack-s" style="max-width:300px;margin:18px auto 0">
+        <a href="https://wa.me/4917675881485" target="_blank" rel="noopener" class="btn" style="width:100%">
+          <svg fill="currentColor" width="17" height="17" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.418-.099.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-3.825 3.113-6.937 6.937-6.937 1.856.001 3.598.723 4.907 2.034 1.31 1.311 2.031 3.054 2.03 4.908-.001 3.825-3.113 6.938-6.937 6.938z"/></svg>
+          <span>WhatsApp</span>
+        </a>
+        <a href="tel:+4917675881485" class="btn" style="width:100%">
+          <svg fill="none" width="17" height="17" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+          <span data-de="Anrufen" data-ru="Позвонить" data-en="Call">Anrufen</span>
+        </a>
+        <a href="https://instagram.com/beautyglanz_26" target="_blank" rel="noopener" class="btn" style="width:100%">
+          <svg fill="currentColor" width="17" height="17" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          <span>Instagram</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="sec">
+  <div class="wrap wrap-t">
+    <div class="sec-head">
+      <h2 class="d2 split" data-de="Häufige Fragen" data-ru="Частые вопросы" data-en="Frequently asked">Häufige Fragen</h2>
+    </div>
+    <div id="faqContainer"></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="sec on-ink">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="d1 split" data-de="So finden Sie uns" data-ru="Как нас найти" data-en="Finding us">So finden Sie uns</h2>
+    </div>
+    <div class="contact-grid reveal">
+      <dl class="contact-info">
+        <div class="contact-row">
+          <dt data-de="Adresse" data-ru="Адрес" data-en="Address">Adresse</dt>
+          <dd>Theaterstraße 3<br>34117 Kassel</dd>
+        </div>
+        <div class="contact-row">
+          <dt data-de="Telefon" data-ru="Телефон" data-en="Phone">Telefon</dt>
+          <dd><a href="tel:+4917675881485">+49 176 75881485</a></dd>
+        </div>
+        <div class="contact-row">
+          <dt>E-Mail</dt>
+          <dd><a href="mailto:Beauty.Glanz@web.de">Beauty.Glanz@web.de</a></dd>
+        </div>
+        <div class="contact-row">
+          <dt>Instagram</dt>
+          <dd><a href="https://instagram.com/beautyglanz_26" target="_blank" rel="noopener">@beautyglanz_26</a></dd>
+        </div>
+        <div class="contact-row">
+          <dt data-de="Öffnungszeiten" data-ru="Часы работы" data-en="Hours">Öffnungszeiten</dt>
+          <dd data-de="Montag bis Samstag, 10 bis 18 Uhr" data-ru="Понедельник–суббота, 10:00–18:00" data-en="Monday to Saturday, 10am to 6pm">Montag bis Samstag, 10 bis 18 Uhr</dd>
+        </div>
+      </dl>
+      <div class="map-box">
+        <iframe src="https://maps.google.com/maps?q=Theaterstra%C3%9Fe%203%2C%2034117%20Kassel&t=&z=15&ie=UTF8&iwloc=&output=embed" title="Karte: Theaterstraße 3, Kassel" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-mark">
+        <img src="assets/images/shared/logo_optimized.png" alt="Beauty Glanz" loading="lazy" decoding="async">
+        <p class="foot-word">Beauty Glanz</p>
+        <p class="small" style="color:var(--on-ink-3);margin-top:14px;max-width:34ch" data-de="Nagelstudio und Kosmetik in der Theaterstraße 3, Kassel." data-ru="Студия ногтей и косметологии, Театерштрассе 3, Кассель." data-en="Nail studio and beauty at Theaterstraße 3, Kassel.">Nagelstudio und Kosmetik in der Theaterstraße 3, Kassel.</p>
+      </div>
+      <div class="foot-col">
+        <h4 data-de="Studio" data-ru="Студия" data-en="Studio">Studio</h4>
+        <ul>
+          <li><a href="#about" data-de="Über mich" data-ru="Обо мне" data-en="About">Über mich</a></li>
+          <li><a href="#services" data-de="Preise" data-ru="Цены" data-en="Prices">Preise</a></li>
+          <li><a href="#gallery" data-de="Galerie" data-ru="Галерея" data-en="Gallery">Galerie</a></li>
+          <li><a href="#booking" data-de="Termin buchen" data-ru="Записаться" data-en="Book now">Termin buchen</a></li>
+          <li><a href="/admin.html">Admin</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4 data-de="Rechtliches" data-ru="Правовое" data-en="Legal">Rechtliches</h4>
+        <ul>
+          <li><a href="/impressum.html" data-de="Impressum" data-ru="Правовая информация" data-en="Legal notice">Impressum</a></li>
+          <li><a href="/datenschutz.html" data-de="Datenschutz" data-ru="Конфиденциальность" data-en="Privacy">Datenschutz</a></li>
+          <li><a href="/agb.html" data-de="AGB" data-ru="Условия" data-en="Terms">AGB</a></li>
+          <li><button onclick="document.getElementById('cookieBanner').classList.add('translate-y-0')" data-de="Cookie-Einstellungen" data-ru="Настройки cookie" data-en="Cookie settings">Cookie-Einstellungen</button></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <p>&copy; 2026 Beauty Glanz</p>
+      <p data-de="Gestaltet in Kassel" data-ru="Сделано в Касселе" data-en="Made in Kassel">Gestaltet in Kassel</p>
+    </div>
+  </div>
+</footer>
+
+<!-- FLOATING WHATSAPP (desktop) -->
+<a href="https://wa.me/4917675881485" target="_blank" rel="noopener" class="float-wa" aria-label="WhatsApp">
+  <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.418-.099.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-3.825 3.113-6.937 6.937-6.937 1.856.001 3.598.723 4.907 2.034 1.31 1.311 2.031 3.054 2.03 4.908-.001 3.825-3.113 6.938-6.937 6.938z"/></svg>
+</a>
+
+<!-- MOBILE ACTION BAR -->
+<nav class="action-bar" id="actionBar" aria-label="Schnellaktionen">
+  <a href="#booking"><span data-de="Termin buchen" data-ru="Записаться" data-en="Book now">Termin buchen</span></a>
+  <a href="https://wa.me/4917675881485" target="_blank" rel="noopener" aria-label="WhatsApp">
+    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm-.029-6.172c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-3.825 3.113-6.937 6.937-6.937 1.856.001 3.598.723 4.907 2.034 1.31 1.311 2.031 3.054 2.03 4.908-.001 3.825-3.113 6.938-6.937 6.938z"/></svg>
+  </a>
+  <a href="tel:+4917675881485" aria-label="Anrufen">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+  </a>
+</nav>
+
+<!-- COOKIE BANNER -->
+<div id="cookieBanner">
+  <p data-de="Diese Website verwendet Cookies, damit die Buchung und die Bestätigungs-E-Mail funktionieren. <a href='/datenschutz.html'>Datenschutzerklärung</a>" data-ru="Этот сайт использует файлы cookie, чтобы запись и письмо-подтверждение работали. <a href='/datenschutz.html'>Политика конфиденциальности</a>" data-en="This site uses cookies so booking and the confirmation email work. <a href='/datenschutz.html'>Privacy policy</a>">Diese Website verwendet Cookies, damit die Buchung und die Bestätigungs-E-Mail funktionieren. <a href="/datenschutz.html">Datenschutzerklärung</a></p>
+  <div class="cookie-actions">
+    <button onclick="acceptCookies('necessary')" data-de="Nur notwendige" data-ru="Только необходимые" data-en="Necessary only">Nur notwendige</button>
+    <button onclick="acceptCookies('accepted')" data-de="Akzeptieren" data-ru="Принять" data-en="Accept">Akzeptieren</button>
+  </div>
+</div>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/lux.js" defer></script>
+</body>
+</html>

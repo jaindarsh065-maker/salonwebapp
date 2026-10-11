@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Beauty Glanz — Nagelstudio & Kosmetik von Meisterin Anna</title>
+<link rel="icon" href="/favicon.ico?v=2" type="image/x-icon">
+<meta name="description" content="Beauty Glanz — Professionelle Maniküre, Pediküre, Waxing, Permanent Make-up und mehr von Meisterin Anna.">
+<!-- Critical Image Preloads for Instant Performance -->
+<link rel="preload" as="image" href="assets/images/hero/flower.png">
+<link rel="preload" as="image" href="assets/images/about/anna.png">
+<link rel="preload" as="image" href="assets/images/shared/logo_optimized.png">
+<link rel="preload" as="image" href="assets/images/hero/hands1.png">
+<link rel="preload" as="image" href="assets/images/hero/hands2.png">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{colors:{cream:'#F5EFE8',espresso:'#1C1410',rose:'#C4826A','rose-light':'#d9a895','rose-dark':'#a8694f','cream-dark':'#E8DFD4'},fontFamily:{heading:['"Playfair Display"','serif'],body:['"DM Sans"','sans-serif']}}}};
+</script>
+<link rel="stylesheet" href="assets/css/style.css">
+<meta property="og:title" content="Beauty Glanz Kassel — Nagelstudio & Kosmetik">
+<meta property="og:description" content="Maniküre, Pediküre, Waxing & Permanent Make-up in Kassel">
+<meta property="og:type" content="website">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BeautySalon",
+  "name": "Beauty Glanz",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Theaterstraße 3",
+    "addressLocality": "Kassel",
+    "postalCode": "34117",
+    "addressCountry": "DE"
+  },
+  "telephone": "+4917675881485"
+}
+</script>
+</head>
+<body class="overflow-x-hidden max-w-[100vw]">
+
+
+<!-- LANGUAGE SWITCHER -->
+<div class="lang-switcher hidden md:block" id="langSwitcher">
+  <div class="lang-dropdown" id="langDropdown">
+    <div class="lang-option active" data-lang="de" onclick="selectLang('de')">Deutsch</div>
+    <div class="lang-option" data-lang="ru" onclick="selectLang('ru')">Русский</div>
+    <div class="lang-option" data-lang="en" onclick="selectLang('en')">English</div>
+  </div>
+  <div class="lang-current" onclick="document.getElementById('langSwitcher').classList.toggle('open')">
+    <span id="langLabel">DE</span>
+    <svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header id="mainHeader" class="fixed top-0 left-0 w-full z-40 bg-transparent border-b border-transparent transition-all duration-300">
+  <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+    <a href="#"><img src="assets/images/shared/logo_optimized.png" alt="Beauty Glanz" class="h-10 md:h-12" decoding="async"></a>
+    <nav class="hidden md:flex gap-8 font-body text-sm tracking-wide">
+      <a href="#about" class="hover:text-rose transition-colors" data-de="Über mich" data-ru="Обо мне" data-en="About">Über mich</a>
+      <a href="#services" class="hover:text-rose transition-colors" data-de="Leistungen" data-ru="Услуги" data-en="Services">Leistungen</a>
+      <a href="#gallery" class="hover:text-rose transition-colors" data-de="Galerie" data-ru="Галерея" data-en="Gallery">Galerie</a>
+      <a href="#reviews" class="hover:text-rose transition-colors" data-de="Bewertungen" data-ru="Отзывы" data-en="Reviews">Bewertungen</a>
+      <a href="#booking" class="hover:text-rose transition-colors" data-de="Buchung" data-ru="Запись" data-en="Booking">Buchung</a>
+      <a href="#contact" class="hover:text-rose transition-colors" data-de="Kontakt" data-ru="Контакт" data-en="Contact">Kontakt</a>
+      <a href="/admin.html" class="font-body text-sm font-medium text-espresso/60 hover:text-rose transition-colors">Admin</a>
+    </nav>
+    <a href="#booking" class="hidden md:inline-block border border-espresso text-espresso text-xs font-bold tracking-widest uppercase px-5 py-2 rounded-full hover:bg-espresso hover:text-cream transition-all" data-de="Termin buchen" data-ru="Записаться" data-en="Book now">Termin buchen</a>
+    <button class="md:hidden flex flex-col gap-1.5" onclick="document.getElementById('mobileOverlay').classList.add('open')">
+      <span class="w-6 h-0.5 bg-espresso"></span><span class="w-6 h-0.5 bg-espresso"></span><span class="w-4 h-0.5 bg-espresso"></span>
+    </button>
+  </div>
+</header>
+
+<!-- MOBILE OVERLAY MENU -->
+<div id="mobileOverlay" class="mobile-overlay">
+  <button class="close-btn" onclick="document.getElementById('mobileOverlay').classList.remove('open')">&times;</button>
+  <a href="#about" onclick="closeMobile()" data-de="Über mich" data-ru="Обо мне" data-en="About">Über mich</a>
+  <a href="#services" onclick="closeMobile()" data-de="Leistungen" data-ru="Услуги" data-en="Services">Leistungen</a>
+  <a href="#gallery" onclick="closeMobile()" data-de="Galerie" data-ru="Галерея" data-en="Gallery">Galerie</a>
+  <a href="#reviews" onclick="closeMobile()" data-de="Bewertungen" data-ru="Отзывы" data-en="Reviews">Bewertungen</a>
+  <a href="#booking" onclick="closeMobile()" data-de="Buchung" data-ru="Запись" data-en="Booking">Buchung</a>
+  <a href="#contact" onclick="closeMobile()" data-de="Kontakt" data-ru="Контакт" data-en="Contact">Kontakt</a>
+  <a href="/admin.html" onclick="closeMobile()">Admin</a>
+  <a href="#booking" onclick="closeMobile()" class="mt-4 border-2 border-espresso text-espresso font-body font-bold text-sm tracking-widest uppercase px-8 py-3.5 rounded-full" style="font-family:'DM Sans',sans-serif;font-size:13px" data-de="Termin buchen" data-ru="Записаться" data-en="Book now">Termin buchen</a>
+  <!-- Language Selector inside mobile menu -->
+  <div class="flex gap-4 mt-6 items-center">
+    <button onclick="selectLang('de'); closeMobile()" class="font-body text-sm font-bold tracking-widest uppercase lang-mobile-option de">DE</button>
+    <span class="text-espresso/30">|</span>
+    <button onclick="selectLang('ru'); closeMobile()" class="font-body text-sm font-bold tracking-widest uppercase lang-mobile-option ru">RU</button>
+    <span class="text-espresso/30">|</span>
+    <button onclick="selectLang('en'); closeMobile()" class="font-body text-sm font-bold tracking-widest uppercase lang-mobile-option en">EN</button>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero-section">
+  <div class="hero-container">
+    <!-- Text column -->
+    <div class="reveal hero-text-wrap">
+      <p class="reveal font-body text-rose hero-subtitle-new parallax-text" id="heroSubtitle" data-de="Nagelstudio & Kosmetik" data-ru="Ногтевая студия и косметология" data-en="Nail Studio & Beauty">Nagelstudio & Kosmetik</p>
+      <h1 class="reveal stagger-1 font-heading hero-title-new text-espresso parallax-text" id="heroTitle">Beauty<br><span class="text-rose italic">Glanz</span></h1>
+      <p class="reveal stagger-2 font-body text-espresso/70 hero-desc-new leading-relaxed parallax-text" id="heroDesc" data-de="Professionelle Schönheitspflege von Meisterin Anna — Ihr Weg zu natürlicher Eleganz und zeitloser Schönheit." data-ru="Профессиональный уход за красотой от мастера Анны — ваш путь к натуральной элегантности и вневременной красоте." data-en="Professional beauty care by master Anna — your path to natural elegance and timeless beauty.">Professionelle Schönheitspflege von Meisterin Anna — Ihr Weg zu natürlicher Eleganz und zeitloser Schönheit.</p>
+      <a href="#booking" class="reveal stagger-3 cta-btn inline-block border-2 border-espresso text-espresso font-body font-bold rounded-full hero-btn-new parallax-text" id="heroBtn" data-de="Termin vereinbaren" data-ru="Записаться на приём" data-en="Book appointment">Termin vereinbaren</a>
+    </div>
+    <!-- Flower image -->
+    <div class="reveal hero-img-wrap z-20 pointer-events-none">
+      <img src="assets/images/hero/flower.png" alt="Flower decoration" id="heroImg" class="align-bottom" decoding="async">
+    </div>
+  </div>
+</section>
+
+
+<!-- INTRO -->
+<section id="intro" class="py-24 md:py-32 bg-[#EDE5DA] relative z-20 overflow-hidden flex items-center">
+  
+  <!-- hands2.png (Left, top) -> Anchored to edge, scaled up for depth -->
+  <img src="assets/images/hero/hands2.png" alt="Hands 2" id="introImgLeft" class="hand-left absolute top-12 md:top-24 left-0 w-48 sm:w-64 md:w-80 lg:w-[400px] xl:w-[480px] object-contain object-left pointer-events-none z-30" decoding="async">
+  
+  <!-- hands1.png (Right, bottom) -> Anchored to edge, scaled up for depth -->
+  <img src="assets/images/hero/hands1.png" alt="Hands 1" id="introImgRight" class="hand-right absolute bottom-12 md:bottom-24 right-0 w-48 sm:w-64 md:w-80 lg:w-[400px] xl:w-[480px] object-contain object-right pointer-events-none z-30" decoding="async">
+
+  <div class="max-w-4xl mx-auto px-6 text-center relative z-10 py-12 md:py-0">
+    <h2 id="introTitle" class="reveal font-heading text-4xl md:text-5xl lg:text-6xl text-rose mb-6 leading-snug" data-de="Schönheit, die von innen strahlt" data-ru="Красота, которая сияет изнутри" data-en="Beauty that radiates from within">Schönheit, die von innen strahlt</h2>
+    <p id="introDesc" class="reveal stagger-1 font-body text-espresso/55 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto" data-de="Im Herzen Kassels verwandeln wir Ihre Schönheitswünsche in Realität. Unser Studio bietet Ihnen eine Oase der Ruhe, in der Präzision und Kreativität aufeinandertreffen — für Ergebnisse, die begeistern." data-ru="В самом сердце Касселя мы воплощаем ваши мечты о красоте в реальность. Наша студия — оазис спокойствия, где точность встречается с креативностью — для результатов, которые восхищают." data-en="In the heart of Kassel, we turn your beauty dreams into reality. Our studio offers you an oasis of calm where precision meets creativity — for results that inspire.">Im Herzen Kassels verwandeln wir Ihre Schönheitswünsche in Realität. Unser Studio bietet Ihnen eine Oase der Ruhe, in der Präzision und Kreativität aufeinandertreffen — für Ergebnisse, die begeistern.</p>
+  </div>
+</section>
+
+
+
+<!-- ABOUT -->
+<section id="about" class="pt-10 pb-0 md:py-24 overflow-hidden relative">
+  <div class="max-w-5xl mx-auto px-6 relative z-10 flex flex-col items-center">
+    <!-- Text content centered ABOVE -->
+    <div class="max-w-2xl mx-auto text-center space-y-4 sm:space-y-6 mb-6 md:mb-16">
+      <p class="reveal font-body text-rose tracking-[0.2em] uppercase text-xs font-bold" data-de="Über mich" data-ru="Обо мне" data-en="About me">Über mich</p>
+      <h2 class="reveal stagger-1 font-heading text-4xl md:text-5xl text-espresso" data-de="Meisterin Anna" data-ru="Мастер Анна" data-en="Master Anna">Meisterin Anna</h2>
+      <p class="reveal stagger-2 font-body text-espresso/70 leading-relaxed" data-de="Mit über 14 Jahren Erfahrung in der Schönheitsbranche bringe ich Leidenschaft und Präzision in jede Behandlung. Mein Ziel ist es, Ihre natürliche Schönheit zu unterstreichen und Ihnen ein Erlebnis zu schenken, das Sie strahlen lässt." data-ru="С более чем 14-летним опытом в индустрии красоты я привношу страсть и точность в каждую процедуру. Моя цель — подчеркнуть вашу естественную красоту и подарить вам опыт, который заставит вас сиять." data-en="With over 14 years of experience in the beauty industry, I bring passion and precision to every treatment. My goal is to highlight your natural beauty and give you an experience that makes you glow.">Mit über 14 Jahren Erfahrung in der Schönheitsbranche bringe ich Leidenschaft und Präzision in jede Behandlung. Mein Ziel ist es, Ihre natürliche Schönheit zu unterstreichen und Ihnen ein Erlebnis zu schenken, das Sie strahlen lässt.</p>
+      <div class="reveal stagger-3 grid grid-cols-3 gap-4 pt-4">
+        <div class="text-center p-4 rounded-2xl bg-cream"><p class="font-heading text-3xl text-rose">14+</p><p class="font-body text-xs text-espresso/60 mt-1" data-de="Jahre Erfahrung" data-ru="лет опыта" data-en="years experience">Jahre Erfahrung</p></div>
+        <div class="text-center p-4 rounded-2xl bg-cream"><p class="font-heading text-3xl text-rose">5K+</p><p class="font-body text-xs text-espresso/60 mt-1" data-de="Zufriedene Kunden" data-ru="Довольных клиентов" data-en="Happy clients">Zufriedene Kunden</p></div>
+        <div class="text-center p-4 rounded-2xl bg-cream"><p class="font-heading text-3xl text-rose">20+</p><p class="font-body text-xs text-espresso/60 mt-1" data-de="Behandlungen" data-ru="Процедур" data-en="Treatments">Behandlungen</p></div>
+      </div>
+    </div>
+
+    <!-- Cutout Photo, heavily enlarged and overlapping -->
+    <div id="aboutPhotoWrap" class="w-full max-w-[800px] flex justify-center mt-0 mb-0 md:-mb-32 relative z-20">
+      
+      <!-- Animated Lines UNDER Anna's Photo -->
+      <div class="absolute bottom-0 w-[150%] md:w-[120%] h-[55vh] sm:h-[70vh] md:h-[95vh] -z-10 flex items-end justify-center pointer-events-none opacity-80 left-1/2 -translate-x-1/2">
+        <svg class="w-full h-full object-cover min-w-[800px] animate-pulse" style="animation-duration: 4s;" viewBox="0 0 1440 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M-100 600 C300 800 600 200 1000 400 C1300 550 1500 300 1600 400" stroke="url(#lineGrad1)" stroke-width="2" stroke-linecap="round" />
+          <path d="M-50 400 C200 200 800 700 1200 300 C1400 100 1500 200 1600 250" stroke="url(#lineGrad2)" stroke-width="1" stroke-linecap="round" opacity="0.8" />
+          <path d="M0 700 C400 500 700 600 1000 200 C1200 -50 1400 100 1550 300" stroke="url(#lineGrad3)" stroke-width="3" stroke-linecap="round" opacity="0.6" />
+          <defs>
+            <linearGradient id="lineGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#C4826A" stop-opacity="0.1"/>
+              <stop offset="50%" stop-color="#C4826A" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#d9a895" stop-opacity="0.1"/>
+            </linearGradient>
+            <linearGradient id="lineGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#a8694f" stop-opacity="0.2"/>
+              <stop offset="50%" stop-color="#C4826A" stop-opacity="0.7"/>
+              <stop offset="100%" stop-color="#E8DFD4" stop-opacity="0.1"/>
+            </linearGradient>
+            <linearGradient id="lineGrad3" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#E8DFD4" stop-opacity="0.2"/>
+              <stop offset="50%" stop-color="#d9a895" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="#C4826A" stop-opacity="0.1"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <img src="assets/images/about/anna.png" alt="Anna" fetchpriority="high" class="reveal relative z-10 w-auto h-[50vh] sm:h-[65vh] md:h-[85vh] object-contain object-bottom pointer-events-none origin-bottom md:hover:scale-105 transition-transform duration-700" decoding="async">
+    </div>
+  </div>
+</section>
+
+<!-- CLINIC -->
+<section id="clinic" class="py-16 md:py-24 bg-[#EDE5DA] relative overflow-hidden">
+  <div class="max-w-6xl mx-auto px-6">
+    <p class="reveal text-center font-body text-rose tracking-[0.2em] uppercase text-xs font-bold mb-3" data-de="Unsere Klinik" data-ru="Наша клиника" data-en="Our Clinic">Unsere Klinik</p>
+    <h2 class="reveal stagger-1 text-center font-heading text-4xl md:text-5xl text-espresso mb-12 lg:mb-24" data-de="Hier entsteht Schönheit" data-ru="Здесь рождается красота" data-en="Where beauty is created">Hier entsteht Schönheit</h2>
+    
+    <div class="flex flex-col lg:flex-row gap-12 lg:gap-16 items-center justify-between lg:mb-4">
+      <div class="reveal stagger-2 space-y-6 lg:space-y-10 lg:w-[55%] max-w-xl lg:max-w-2xl mx-auto lg:mx-0">
+        <p class="font-body text-espresso/80 leading-relaxed md:text-lg lg:text-xl lg:leading-loose" data-de="Unser Studio bietet Ihnen einen Ort der Ruhe und Entspannung. Mit modernster Ausstattung und höchstem Komfort sorgen wir dafür, dass Sie sich bei jeder Behandlung rundum wohlfühlen." data-ru="Наша студия предлагает вам место спокойствия и расслабления. С самым современным оборудованием и высоким уровнем комфорта мы заботимся о том, чтобы вы чувствовали себя прекрасно во время каждой процедуры." data-en="Our studio offers you a place of peace and relaxation. With state-of-the-art equipment and maximum comfort, we ensure that you feel completely at ease during every treatment.">Unser Studio bietet Ihnen einen Ort der Ruhe und Entspannung. Mit modernster Ausstattung und höchstem Komfort sorgen wir dafür, dass Sie sich bei jeder Behandlung rundum wohlfühlen.</p>
+        <div class="flex flex-col gap-3.5 lg:gap-6 pt-2">
+          <div class="flex items-center gap-3 lg:gap-4 text-espresso">
+            <div class="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-rose flex-shrink-0"></div>
+            <span class="font-body md:text-lg lg:text-xl font-medium" data-de="Höchste Hygienestandards" data-ru="Высочайшие стандарты гигиены" data-en="Highest hygiene standards">Höchste Hygienestandards</span>
+          </div>
+          <div class="flex items-center gap-3 lg:gap-4 text-espresso">
+            <div class="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-rose flex-shrink-0"></div>
+            <span class="font-body md:text-lg lg:text-xl font-medium" data-de="Entspannende Atmosphäre" data-ru="Расслабляющая атмосфера" data-en="Relaxing atmosphere">Entspannende Atmosphäre</span>
+          </div>
+          <div class="flex items-center gap-3 lg:gap-4 text-espresso">
+            <div class="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-rose flex-shrink-0"></div>
+            <span class="font-body md:text-lg lg:text-xl font-medium" data-de="Individuelle Beratung" data-ru="Индивидуальный подход" data-en="Individual consultation">Individuelle Beratung</span>
+          </div>
+        </div>
+      </div>
+      <div class="reveal stagger-3 lg:w-[45%] max-w-md w-full shrink-0 mx-auto flex flex-col items-center">
+        <!-- Slider Container with Rectangular Mask for soft borders -->
+        <div id="clinicSlider" class="relative w-full aspect-[4/5] cursor-pointer transition-opacity duration-500" style="-webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent), linear-gradient(to bottom, transparent, black 15%, black 85%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent), linear-gradient(to bottom, transparent, black 15%, black 85%, transparent); mask-composite: intersect;" onclick="openLightbox(this)" data-src="assets/images/clinic/clinic-1.jpg">
+          <!-- Slides -->
+          <img id="clinicSlide0" src="assets/images/clinic/clinic-1.jpg" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-100" loading="lazy" alt="" decoding="async">
+          <img id="clinicSlide1" src="assets/images/clinic/clinic-2.jpg" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-0" loading="lazy" alt="" decoding="async">
+          <img id="clinicSlide2" src="assets/images/clinic/clinic-3.jpg" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-0" loading="lazy" alt="" decoding="async">
+          <img id="clinicSlide3" src="assets/images/clinic/clinic-4.jpg" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-0" loading="lazy" alt="" decoding="async">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<!-- Added background color and extra top padding to accommodate overlapping photo -->
+<section id="gallery" class="py-16 md:py-24 pt-24 md:pt-32 bg-cream relative z-10">
+  <div class="max-w-6xl mx-auto px-6">
+    <p class="reveal text-center font-body text-rose tracking-[0.2em] uppercase text-xs font-bold mb-3" data-de="Galerie" data-ru="Галерея" data-en="Gallery">Galerie</p>
+    <h2 class="reveal stagger-1 text-center font-heading text-4xl md:text-5xl text-espresso mb-10" data-de="Unsere Arbeiten" data-ru="Наши работы" data-en="Our Work">Unsere Arbeiten</h2>
+    <div class="reveal stagger-2 flex flex-wrap justify-center gap-3 mb-12" id="categoryPills"></div>
+    <div id="galleryPanels" class="reveal stagger-3"></div>
+  </div>
+</section>
+
+
+
+<!-- SERVICES & PRICES -->
+<section id="services" class="py-16 md:py-24 bg-[#EDE5DA]">
+  <div class="max-w-4xl mx-auto px-6">
+    <p class="reveal text-center font-body text-rose tracking-[0.2em] uppercase text-xs font-bold mb-3" data-de="Leistungen & Preise" data-ru="Услуги и цены" data-en="Services & Prices">Leistungen & Preise</p>
+    <h2 class="reveal stagger-1 text-center font-heading text-4xl md:text-5xl text-espresso mb-14" data-de="Unsere Behandlungen" data-ru="Наши процедуры" data-en="Our Treatments">Unsere Behandlungen</h2>
+    <div class="space-y-4" id="accordionContainer"></div>
+  </div>
+</section>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="absolute top-6 right-6 text-white text-3xl font-light hover:rotate-90 transition-transform z-10" onclick="closeLightbox(event)">&times;</button>
+  <div class="lightbox-content" id="lightboxInner"></div>
+</div>
+
+<!-- REVIEWS -->
+<section id="reviews" class="py-16 md:py-24 bg-cream">
+  <div class="max-w-5xl mx-auto px-6">
+    <p class="reveal text-center font-body text-rose tracking-[0.2em] uppercase text-xs font-bold mb-3" data-de="Bewertungen" data-ru="Отзывы" data-en="Reviews">Bewertungen</p>
+    <h2 class="reveal stagger-1 text-center font-heading text-4xl md:text-5xl text-espresso mb-14" data-de="Was unsere Kunden sagen" data-ru="Что говорят наши клиенты" data-en="What our clients say">Was unsere Kunden sagen</h2>
+    <div class="grid md:grid-cols-3 gap-6" id="reviewsGrid"></div>
+  </div>
+</section>
+
+<!-- BOOKING -->
+<div class="toast-wrap" id="toastWrap"></div>
+<section id="booking" class="py-16 md:py-24 bg-[#EDE5DA]">
+  <div class="max-w-2xl mx-auto px-6">
+    <p class="reveal text-center font-body text-rose tracking-[0.2em] uppercase text-xs font-bold mb-3" data-de="Online-Buchung" data-ru="Онлайн-запись" data-en="Online Booking">Online-Buchung</p>
+    <h2 class="reveal stagger-1 text-center font-heading text-4xl md:text-5xl text-espresso mb-10" data-de="Termin vereinbaren" data-ru="Записаться на приём" data-en="Book an appointment">Termin vereinbaren</h2>
+
+    <!-- BOOKING FORM -->
+    <div id="bookingStep1" class="reveal stagger-2">
+      <div class="bg-cream-dark/40 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-cream-dark/30 shadow-sm">
+        <form id="bookingForm" class="space-y-7" onsubmit="bookingSubmit(event)">
+
+          <!-- STEP 1: SERVICE (multi-level) -->
+          <div>
+            <p class="booking-step-label" data-de="Schritt 1 — Behandlung" data-ru="Шаг 1 — Услуга" data-en="Step 1 — Treatment">Schritt 1 — Behandlung</p>
+            <div id="svcPickerWrap"></div>
+            <input type="hidden" id="selectedServiceId" value="">
+            <input type="hidden" id="selectedServiceName" value="">
+          </div>
+
+          <!-- STEP 2: DATE -->
+          <div class="booking-block locked" id="blockDate">
+            <p class="booking-step-label" data-de="Schritt 2 — Datum" data-ru="Шаг 2 — Дата" data-en="Step 2 — Date">Schritt 2 — Datum</p>
+            <div class="rounded-2xl border border-cream-dark/60 bg-[#F5EFE8]/70 p-4">
+              <div class="cal-header">
+                <button type="button" class="cal-nav" id="calPrev">&#8249;</button>
+                <span class="cal-month-label" id="calMonthLabel"></span>
+                <button type="button" class="cal-nav" id="calNext">&#8250;</button>
+              </div>
+              <div class="cal-weekdays" id="calWeekdays"></div>
+              <div class="cal-days" id="calDays"></div>
+            </div>
+            <input type="hidden" id="bookingDate" value="">
+          </div>
+
+          <!-- STEP 3: TIME -->
+          <div class="booking-block locked" id="blockTime">
+            <p class="booking-step-label" data-de="Schritt 3 — Uhrzeit" data-ru="Шаг 3 — Время" data-en="Step 3 — Time">Schritt 3 — Uhrzeit</p>
+            <div id="timeGridWrap" class="time-grid"></div>
+            <p id="timeSlotsEmpty" class="hidden font-body text-sm text-espresso/50 italic mt-2" data-de="Keine freien Zeiten für diesen Tag" data-ru="Нет свободных мест на эту дату" data-en="No available times for this date">Keine freien Zeiten für diesen Tag</p>
+            <input type="hidden" id="selectedTime" value="">
+          </div>
+
+          <!-- CONTACT -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="font-body text-xs font-bold text-espresso/60 uppercase tracking-wider mb-1.5 block" data-de="Ihr Name" data-ru="Ваше имя" data-en="Your name">Ihr Name</label>
+              <input type="text" required class="form-input w-full px-4 py-3.5 rounded-xl font-body text-sm" id="bookingName" data-de-placeholder="Vor- und Nachname" data-ru-placeholder="Имя и фамилия" data-en-placeholder="First and last name" placeholder="Vor- und Nachname">
+            </div>
+            <div>
+              <label class="font-body text-xs font-bold text-espresso/60 uppercase tracking-wider mb-1.5 block" data-de="Telefon" data-ru="Телефон" data-en="Phone">Telefon</label>
+              <input type="tel" required class="form-input w-full px-4 py-3.5 rounded-xl font-body text-sm" id="bookingPhone" data-de-placeholder="+43 660 ..." data-ru-placeholder="+43 660 ..." data-en-placeholder="+43 660 ..." placeholder="+43 660 ...">
+            </div>
+          </div>
+          <div>
+            <label class="font-body text-xs font-bold text-espresso/60 uppercase tracking-wider mb-1.5 block" data-de="E-Mail" data-ru="Эл. почта" data-en="Email">E-Mail</label>
+            <input type="email" required class="form-input w-full px-4 py-3.5 rounded-xl font-body text-sm" id="bookingEmail" data-de-placeholder="ihre@email.com" data-ru-placeholder="ваша@почта.com" data-en-placeholder="your@email.com" placeholder="ihre@email.com">
+          </div>
+          <div>
+            <label class="font-body text-xs font-bold text-espresso/60 uppercase tracking-wider mb-1.5 block" data-de="Nachricht (optional)" data-ru="Сообщение (необязательно)" data-en="Message (optional)">Nachricht (optional)</label>
+            <textarea rows="3" id="bookingNotes" class="form-input w-full px-4 py-3.5 rounded-xl font-body text-sm resize-none" data-de-placeholder="Besondere Wünsche..." data-ru-placeholder="Особые пожелания..." data-en-placeholder="Special requests..." placeholder="Besondere Wünsche..."></textarea>
+          </div>
+          <button type="submit" class="cta-btn w-full border-2 border-espresso text-espresso font-body font-bold text-sm tracking-widest uppercase px-8 py-4 rounded-full mt-2" data-de="Termin buchen" data-ru="Записаться" data-en="Book appointment">Termin buchen</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div id="bookingSuccess" class="hidden">
+      <div class="bg-cream-dark/40 rounded-3xl p-10 text-center border border-cream-dark/30">
+        <div class="w-16 h-16 mx-auto mb-5 rounded-full bg-rose/10 flex items-center justify-center"><span class="text-3xl text-rose">✓</span></div>
+        <h3 class="font-heading text-2xl text-espresso mb-3" data-de="Termin gebucht!" data-ru="Вы записаны!" data-en="Appointment booked!">Termin gebucht!</h3>
+        <p class="font-body text-espresso/60 mb-5" data-de="Wir melden uns in Kürze bei Ihnen zur Bestätigung." data-ru="Мы свяжемся с вами для подтверждения." data-en="We will contact you shortly to confirm.">Wir melden uns in Kürze bei Ihnen zur Bestätigung.</p>
+        <div id="bookingSummary" class="bg-cream rounded-2xl p-5 text-left space-y-2 font-body text-sm"></div>
+        <p id="noEmailWarning" style="margin-top:10px;font-size:13px;color:#888;" data-de="Falls Sie keine Bestätigung per E-Mail erhalten haben, schreiben Sie uns bitte." data-ru="Если вам не пришло подтверждение на почту, напишите нам." data-en="If you didn't receive a confirmation email, please contact us.">Falls Sie keine Bestätigung per E-Mail erhalten haben, schreiben Sie uns bitte.</p>
+        <button type="button" onclick="resetBooking()" class="cta-btn mt-6 border-2 border-espresso text-espresso font-body font-bold text-sm tracking-widest uppercase px-8 py-3.5 rounded-full" data-de="Neue Buchung" data-ru="Новая запись" data-en="New Booking">Neue Buchung</button>
+      </div>
+    </div>
+
+    <!-- DIRECT CONTACT BUTTONS -->
+    <div class="mt-16 max-w-sm mx-auto text-center px-6">
+      <p class="font-body text-rose tracking-[0.2em] uppercase text-xs font-bold mb-3" data-de="Oder" data-ru="Или" data-en="Or">Oder</p>
+      <h3 class="font-heading text-2xl text-espresso mb-6" data-de="Weitere Buchungsoptionen" data-ru="Другие способы записи" data-en="Other booking options">Weitere Buchungsoptionen</h3>
+      <div class="reveal stagger-2 flex flex-col gap-4 max-w-[280px] mx-auto">
+        <a href="https://wa.me/4917675881485" target="_blank" class="w-full flex items-center justify-center gap-3 border-2 border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white font-body font-bold text-sm tracking-widest uppercase px-8 py-3 rounded-full transition-all">
+          <svg fill="currentColor" class="w-6 h-6" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.418-.099.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-3.825 3.113-6.937 6.937-6.937 1.856.001 3.598.723 4.907 2.034 1.31 1.311 2.031 3.054 2.03 4.908-.001 3.825-3.113 6.938-6.937 6.938z"/></svg>
+          WhatsApp
+        </a>
+        <a href="tel:+4917675881485" class="w-full flex items-center justify-center gap-3 border-2 border-espresso text-espresso hover:bg-espresso hover:text-cream font-body font-bold text-sm tracking-widest uppercase px-8 py-3 rounded-full transition-all">
+          <svg fill="none" class="w-6 h-6" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+          <span data-de="Telefon" data-ru="Телефон" data-en="Phone">Telefon</span>
+        </a>
+        <a href="https://instagram.com/beautyglanz_26" target="_blank" class="w-full flex items-center justify-center gap-3 border-2 border-[#E1306C] text-[#E1306C] hover:bg-gradient-to-r hover:from-[#833AB4] hover:via-[#FD1D1D] hover:to-[#F56040] hover:text-white hover:border-transparent font-body font-bold text-sm tracking-widest uppercase px-8 py-3 rounded-full transition-all">
+          <svg fill="currentColor" class="w-6 h-6" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          Instagram
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="py-16 md:py-24 bg-cream">
+  <div class="max-w-3xl mx-auto px-6">
+    <p class="reveal text-center font-body text-rose tracking-[0.2em] uppercase text-xs font-bold mb-3" data-de="FAQ" data-ru="FAQ" data-en="FAQ">FAQ</p>
+    <h2 class="reveal stagger-1 text-center font-heading text-4xl md:text-5xl text-espresso mb-12" data-de="Häufige Fragen" data-ru="Частые вопросы" data-en="Frequently Asked Questions">Häufige Fragen</h2>
+    <div id="faqContainer" class="space-y-4"></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="py-16 md:py-24 bg-[#EDE5DA]">
+  <div class="max-w-5xl mx-auto px-6">
+    <p class="reveal text-center font-body text-rose tracking-[0.2em] uppercase text-xs font-bold mb-3" data-de="Kontakt" data-ru="Контакт" data-en="Contact">Kontakt</p>
+    <h2 class="reveal stagger-1 text-center font-heading text-4xl md:text-5xl text-espresso mb-12" data-de="So finden Sie uns" data-ru="Как нас найти" data-en="How to find us">So finden Sie uns</h2>
+    <div class="grid lg:grid-cols-2 gap-8 reveal stagger-2">
+      <!-- 1. Contact Details -->
+      <div class="bg-cream-dark/40 backdrop-blur-sm rounded-3xl p-8 border border-cream-dark/30 flex flex-col justify-center space-y-6">
+        <div class="flex items-start gap-4"><div class="w-10 h-10 rounded-full bg-rose/10 flex items-center justify-center flex-shrink-0"><span class="text-rose text-sm">📍</span></div><div><p class="font-body font-bold text-sm mb-0.5" data-de="Adresse" data-ru="Адрес" data-en="Address">Adresse</p><p class="font-body text-sm text-espresso/60">Theaterstraße 3, 34117 Kassel</p></div></div>
+        <div class="flex items-start gap-4"><div class="w-10 h-10 rounded-full bg-rose/10 flex items-center justify-center flex-shrink-0"><span class="text-rose text-sm">📞</span></div><div><p class="font-body font-bold text-sm mb-0.5" data-de="WhatsApp / Telefon" data-ru="WhatsApp / Телефон" data-en="WhatsApp / Phone">WhatsApp / Telefon</p><a href="tel:+4917675881485" class="font-body text-sm text-espresso/60 hover:text-rose transition-colors">+49 176 75881485</a></div></div>
+        <div class="flex items-start gap-4"><div class="w-10 h-10 rounded-full bg-rose/10 flex items-center justify-center flex-shrink-0"><span class="text-rose text-sm">✉</span></div><div><p class="font-body font-bold text-sm mb-0.5">E-Mail</p><a href="mailto:Beauty.Glanz@web.de" class="font-body text-sm text-espresso/60 hover:text-rose transition-colors">Beauty.Glanz@web.de</a></div></div>
+        <div class="flex items-start gap-4"><div class="w-10 h-10 rounded-full bg-rose/10 flex items-center justify-center flex-shrink-0"><span class="text-rose text-sm">📸</span></div><div><p class="font-body font-bold text-sm mb-0.5">Instagram</p><a href="https://instagram.com/beautyglanz_26" target="_blank" class="font-body text-sm text-espresso/60 hover:text-rose transition-colors">@beautyglanz_26</a></div></div>
+        <div class="flex items-start gap-4"><div class="w-10 h-10 rounded-full bg-rose/10 flex items-center justify-center flex-shrink-0"><span class="text-rose text-sm">🕐</span></div><div><p class="font-body font-bold text-sm mb-0.5" data-de="Öffnungszeiten" data-ru="Часы работы" data-en="Opening hours">Öffnungszeiten</p><p class="font-body text-sm text-espresso/60" data-de="Mo–Sa: 10:00–18:00" data-ru="Пн–Сб: 10:00–18:00" data-en="Mon–Sat: 10:00–18:00">Mo–Sa: 10:00–18:00</p></div></div>
+      </div>
+      
+      <!-- 2. Interactive Map -->
+      <div class="bg-cream-dark/40 rounded-3xl p-3 h-full min-h-[300px]">
+        <div class="w-full h-full rounded-2xl overflow-hidden shadow-inner relative bg-cream">
+          <iframe src="https://maps.google.com/maps?q=Theaterstra%C3%9Fe%203%2C%2034117%20Kassel&t=&z=15&ie=UTF8&iwloc=&output=embed" width="100%" height="100%" style="border:0;min-height:300px" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-espresso text-cream py-12">
+  <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+    <img src="assets/images/shared/logo_optimized.png" alt="Beauty Glanz" loading="lazy" class="h-[46px] brightness-0 invert opacity-80" decoding="async">
+    <p class="font-body text-sm text-cream/50">&copy; 2026 Beauty Glanz. <span data-de="Alle Rechte vorbehalten." data-ru="Все права защищены." data-en="All rights reserved.">Alle Rechte vorbehalten.</span></p>
+    <div class="flex gap-4 flex-wrap justify-center">
+      <a href="https://www.instagram.com/beautyglanz_26" target="_blank" class="text-cream/60 hover:text-rose transition-colors text-sm">Instagram</a>
+      <a href="/impressum.html" class="text-cream/60 hover:text-rose transition-colors text-sm" data-de="Impressum" data-ru="Правовая информация" data-en="Legal Notice">Impressum</a>
+      <a href="/datenschutz.html" class="text-cream/60 hover:text-rose transition-colors text-sm" data-de="Datenschutz" data-ru="Конфиденциальность" data-en="Privacy Policy">Datenschutz</a>
+      <a href="/agb.html" class="text-cream/60 hover:text-rose transition-colors text-sm" data-de="AGB" data-ru="Условия (AGB)" data-en="Terms (AGB)">AGB</a>
+      <button onclick="document.getElementById('cookieBanner').classList.add('translate-y-0');" class="text-cream/60 hover:text-rose transition-colors text-sm" data-de="Cookie Einstellungen" data-ru="Настройки Cookie" data-en="Cookie Settings">Cookie Einstellungen</button>
+    </div>
+  </div>
+</footer>
+
+
+
+
+
+<script src="assets/js/main.js"></script>
+
+<!-- COOKIE BANNER -->
+<div id="cookieBanner" class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-espresso/10 p-6 z-[9999] flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6 transform translate-y-full transition-transform duration-500">
+  <div class="text-sm font-body text-espresso/80 text-center md:text-left flex-1" data-de="Diese Website verwendet Cookies, um die Benutzererfahrung zu verbessern. <a href='/datenschutz.html' class='underline hover:text-rose'>Datenschutzerklärung</a>" data-ru="Этот сайт использует файлы cookie. <a href='/datenschutz.html' class='underline hover:text-rose'>Политика конфиденциальности</a>" data-en="This website uses cookies. <a href='/datenschutz.html' class='underline hover:text-rose'>Privacy Policy</a>">
+    Diese Website verwendet Cookies, um die Benutzererfahrung zu verbessern. <a href="/datenschutz.html" class="underline hover:text-rose">Datenschutzerklärung</a>
+  </div>
+  <div class="flex gap-3 w-full md:w-auto">
+    <button onclick="acceptCookies('necessary')" class="flex-1 md:flex-none px-5 py-2.5 rounded-full border border-espresso text-espresso text-xs font-bold uppercase tracking-widest hover:bg-cream transition-colors whitespace-nowrap" data-de="Nur notwendige" data-ru="Только необходимые" data-en="Necessary only">Nur notwendige</button>
+    <button onclick="acceptCookies('accepted')" class="flex-1 md:flex-none px-5 py-2.5 rounded-full bg-espresso text-cream text-xs font-bold uppercase tracking-widest hover:bg-rose transition-colors whitespace-nowrap" data-de="Akzeptieren" data-ru="Принять" data-en="Accept">Akzeptieren</button>
+  </div>
+</div>
+
+</body>
+</html>

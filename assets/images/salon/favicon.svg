@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="V Rohit Rai Unisex Salon">
+  <!-- Monogram mark: the VR initials inside a hairline ring, in the
+       brand's ivory and espresso. Drawn as paths so it stays crisp at
+       16px without hinting a font. -->
+  <rect width="64" height="64" rx="12" fill="#1C1815"/>
+  <circle cx="32" cy="32" r="23" fill="none" stroke="#A17746" stroke-width="1.4" opacity="0.65"/>
+  <g fill="#F7F3ED">
+    <!-- V -->
+    <path d="M16.2 22.4h5.3l5.2 14.9 5.2-14.9h5.2L29.4 43h-4.9z"/>
+    <!-- R -->
+    <path d="M38.8 22.4h8.1c4.2 0 6.7 2.3 6.7 6 0 2.7-1.4 4.7-3.8 5.6L54 43h-5.4l-3.6-8h-1.6v8h-4.6zm4.6 3.8v5.3h3.1c1.8 0 2.8-1 2.8-2.7s-1-2.6-2.8-2.6z"/>
+  </g>
+</svg>

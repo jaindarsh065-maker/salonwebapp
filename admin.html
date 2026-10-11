@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Admin — Beauty Glanz</title>
+<link rel="icon" href="/favicon.ico?v=2" type="image/x-icon">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body class="min-h-screen">
+
+<div id="loginScreen" class="min-h-screen flex items-center justify-center p-6">
+  <div class="bg-white rounded-3xl shadow-xl p-10 w-full max-w-sm text-center">
+    <div style="font-family:'Playfair Display',serif; font-size:24px; color:#C4826A; margin-bottom:4px;">Beauty Glanz</div>
+    <div style="color:#888; font-size:13px; margin-bottom:28px;" data-de="Admin Panel" data-ru="Панель администратора" data-en="Admin Panel">Admin Panel</div>
+    <input id="passwordInput" type="password" placeholder="Passwort" data-placeholder-de="Passwort" data-placeholder-ru="Пароль" data-placeholder-en="Password"
+      class="w-full border border-gray-200 rounded-xl px-4 py-3 mb-4 text-sm focus:outline-none focus:border-[#C4826A]"
+      onkeydown="if(event.key==='Enter')checkPassword()">
+    <button onclick="checkPassword()"
+      class="w-full bg-[#1C1410] text-white rounded-xl py-3 text-sm font-semibold hover:bg-[#C4826A] transition-colors" data-de="Einloggen" data-ru="Войти" data-en="Login">
+      Einloggen
+    </button>
+    <div id="loginError" class="text-red-500 text-sm mt-3 hidden" data-de="Falsches Passwort" data-ru="Неверный пароль" data-en="Wrong password">Falsches Passwort</div>
+
+    <div class="mt-8 flex justify-center gap-4 text-xs font-semibold text-gray-400">
+      <button onclick="setAdminLang('de')" class="hover:text-[#C4826A]">DE</button>
+      <button onclick="setAdminLang('ru')" class="hover:text-[#C4826A]">RU</button>
+      <button onclick="setAdminLang('en')" class="hover:text-[#C4826A]">EN</button>
+    </div>
+  </div>
+</div>
+
+<div id="adminPanel" class="hidden">
+  <div class="bg-[#1C1410] text-white px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div>
+      <span style="font-family:'Playfair Display',serif; font-size:20px; color:#C4826A;">Beauty Glanz</span>
+      <span class="text-white/40 ml-2 text-sm" data-de="Admin" data-ru="Админ" data-en="Admin">Admin</span>
+    </div>
+    <div class="flex items-center justify-center gap-4 flex-wrap">
+      <select id="adminLangHeader" onchange="setAdminLang(this.value)" class="bg-[#1C1410] text-white/80 border border-white/20 rounded px-2 text-xs h-7 focus:outline-none">
+        <option value="de">DE</option><option value="ru">RU</option><option value="en">EN</option>
+      </select>
+      <span id="totalCount" class="text-white/60 text-sm"></span>
+      <a href="/" class="text-white/50 hover:text-white text-sm transition-colors" data-de="← Website" data-ru="← На сайт" data-en="← Website">← Website</a>
+      <button onclick="logout()" class="text-white/50 hover:text-white text-sm transition-colors" data-de="Abmelden" data-ru="Выйти" data-en="Logout">Abmelden</button>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    
+    <!-- TABS -->
+    <div class="flex gap-6 border-b border-gray-200 mb-8" id="adminTabs">
+      <button onclick="switchTab('buchungen')" id="tabBuchungen" class="pb-3 px-2 text-sm font-semibold text-[#1C1410] border-b-2 border-[#1C1410] transition-colors" data-de="Buchungen" data-ru="Бронирования" data-en="Bookings">Buchungen</button>
+      <button onclick="switchTab('kalender')" id="tabKalender" class="pb-3 px-2 text-sm font-medium text-gray-400 hover:text-gray-700 border-b-2 border-transparent transition-colors" data-de="Kalender" data-ru="Календарь" data-en="Calendar">Kalender</button>
+      <button onclick="switchTab('prozeduren')" id="tabProzeduren" class="pb-3 px-2 text-sm font-medium text-gray-400 hover:text-gray-700 border-b-2 border-transparent transition-colors" data-de="Prozeduren" data-ru="Процедуры" data-en="Procedures">Prozeduren</button>
+    </div>
+
+    <!-- TAB 1: BUCHUNGEN -->
+    <div id="viewBuchungen">
+      <!-- STAT CARDS -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div onclick="filterStatus('pending')" class="bg-white rounded-2xl p-5 text-center shadow-sm cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5">
+          <div id="statPending" class="text-3xl font-bold text-yellow-600">—</div>
+          <div class="text-sm text-gray-500 mt-1" data-de="Ausstehend" data-ru="В ожидании" data-en="Pending">Ausstehend</div>
+        </div>
+        <div onclick="filterStatus('confirmed')" class="bg-white rounded-2xl p-5 text-center shadow-sm cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5">
+          <div id="statConfirmed" class="text-3xl font-bold text-green-600">—</div>
+          <div class="text-sm text-gray-500 mt-1" data-de="Bestätigt" data-ru="Подтверждено" data-en="Confirmed">Bestätigt</div>
+        </div>
+        <div onclick="filterStatus('cancelled')" class="bg-white rounded-2xl p-5 text-center shadow-sm cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5">
+          <div id="statCancelled" class="text-3xl font-bold text-red-500">—</div>
+          <div class="text-sm text-gray-500 mt-1" data-de="Storniert" data-ru="Отменено" data-en="Cancelled">Storniert</div>
+        </div>
+        <div onclick="filterStatus('rescheduled')" class="bg-white rounded-2xl p-5 text-center shadow-sm cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5">
+          <div id="statRescheduled" class="text-3xl font-bold text-purple-600">—</div>
+          <div class="text-sm text-gray-500 mt-1" data-de="Verschoben" data-ru="Перенесено" data-en="Rescheduled">Перенесено</div>
+        </div>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="flex flex-wrap gap-3 mb-6 items-center">
+        <div class="flex gap-2 flex-wrap">
+          <button onclick="filterStatus('all')" id="filter-all" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-[#1C1410] text-white" data-de="Alle" data-ru="Все" data-en="All">Alle</button>
+          <button onclick="filterStatus('pending')" id="filter-pending" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-white text-gray-600 hover:bg-gray-100" data-de="Ausstehend" data-ru="Ожидают" data-en="Pending">Ausstehend</button>
+          <button onclick="filterStatus('confirmed')" id="filter-confirmed" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-white text-gray-600 hover:bg-gray-100" data-de="Bestätigt" data-ru="Подтверждены" data-en="Confirmed">Bestätigt</button>
+          <button onclick="filterStatus('cancelled')" id="filter-cancelled" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-white text-gray-600 hover:bg-gray-100" data-de="Storniert" data-ru="Отменены" data-en="Cancelled">Storniert</button>
+          <button onclick="filterStatus('rescheduled')" id="filter-rescheduled" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-white text-purple-600 hover:bg-purple-50 border border-purple-200" data-de="Verschoben" data-ru="Перенесенные" data-en="Rescheduled">Перенесенные</button>
+        </div>
+        <div class="flex gap-2 items-center ml-auto flex-wrap">
+          <input type="hidden" id="dateFilter" value="">
+          <button onclick="loadBookings()" class="px-4 py-2 rounded-full text-sm font-medium bg-[#C4826A] text-white hover:bg-[#a8694f]" data-de="↻ Aktualisieren" data-ru="↻ Обновить" data-en="↻ Refresh">↻ Обновить</button>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div id="loadingState" class="p-12 text-center text-gray-400" data-de="Laden..." data-ru="Загрузка..." data-en="Loading...">Laden...</div>
+        <div id="emptyState" class="p-12 text-center text-gray-400 hidden" data-de="Keine Buchungen gefunden" data-ru="Записи не найдены" data-en="No bookings found">Keine Buchungen gefunden</div>
+        <!-- Desktop table -->
+        <div class="bookings-table-wrap overflow-x-hidden">
+          <table id="bookingsTable" class="w-full hidden">
+            <thead class="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" data-de="Kunde" data-ru="Клиент" data-en="Client">Kunde</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" data-de="Behandlung" data-ru="Услуга" data-en="Service">Behandlung</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" data-de="Datum &amp; Zeit" data-ru="Дата и время" data-en="Date &amp; Time">Datum &amp; Zeit</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" data-de="Status" data-ru="Статус" data-en="Status">Status</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" data-de="Aktionen" data-ru="Действия" data-en="Actions">Aktionen</th>
+              </tr>
+            </thead>
+            <tbody id="bookingsBody"></tbody>
+          </table>
+        </div>
+        <!-- Mobile cards -->
+        <div class="bookings-cards-wrap hidden" id="bookingsCards"></div>
+      </div>
+    </div> <!-- /viewBuchungen -->
+
+    <!-- TAB 3: VERSCHOBEN / Перенесённые -->
+    <div id="viewVerschoben" class="hidden">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-[#1C1410]" data-de="Verschobene Buchungen" data-ru="Перенесённые записи" data-en="Rescheduled Bookings">Перенесённые записи</h2>
+          <p class="text-sm text-gray-400 mt-0.5" data-de="Buchungen die auf einen anderen Termin verschoben wurden" data-ru="Записи, перенесённые на другое время" data-en="Bookings moved to another slot">Записи, перенесённые на другое время</p>
+        </div>
+        <button onclick="loadBookings()" class="px-4 py-2 rounded-full text-sm font-medium bg-[#C4826A] text-white hover:bg-[#a8694f]" data-de="↻ Aktualisieren" data-ru="↻ Обновить" data-en="↻ Refresh">↻ Обновить</button>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div id="reschedLoadingState" class="p-12 text-center text-gray-400" data-de="Laden..." data-ru="Загрузка..." data-en="Loading...">Загрузка...</div>
+        <div id="reschedEmptyState" class="p-12 text-center text-gray-400 hidden">
+          <div class="text-4xl mb-3">📅</div>
+          <div data-de="Keine verschobenen Buchungen" data-ru="Перенесённых записей нет" data-en="No rescheduled bookings">Перенесённых записей нет</div>
+        </div>
+        <div class="overflow-x-auto">
+          <table id="reschedTable" class="w-full hidden whitespace-nowrap">
+            <thead class="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" data-de="Kunde" data-ru="Клиент" data-en="Client">Клиент</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" data-de="Behandlung" data-ru="Услуга" data-en="Service">Услуга</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" data-de="Datum &amp; Zeit" data-ru="Дата и время" data-en="Date &amp; Time">Дата и время</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" data-de="Aktionen" data-ru="Действия" data-en="Actions">Действия</th>
+              </tr>
+            </thead>
+            <tbody id="reschedBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div> <!-- /viewVerschoben -->
+
+    <!-- TAB 2: KALENDER -->
+    <div id="viewKalender" class="hidden flex-col gap-6">
+
+      <!-- CALENDAR & SLOTS -->
+      <div class="flex flex-col xl:flex-row gap-6">
+        <div class="w-full xl:w-5/12">
+          <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative h-full">
+            <div class="flex items-center justify-between mb-6">
+              <button onclick="changeAdminMonth(-1)" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-50 text-gray-500 transition-colors">❮</button>
+              <div id="adminMonthYear" class="text-lg font-bold text-gray-800"></div>
+              <button onclick="changeAdminMonth(1)" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-50 text-gray-500 transition-colors">❯</button>
+            </div>
+            <div class="grid grid-cols-7 gap-1 text-center mb-2 text-xs font-semibold text-gray-400 uppercase tracking-widest" id="adminCalWeekdays"></div>
+            <div id="adminCalDays" class="grid grid-cols-7 gap-1"></div>
+          </div>
+        </div>
+        
+        <div class="w-full xl:w-7/12 flex flex-col gap-6">
+          
+          <!-- BULK DATE RANGE PICKER (ONLY DATES) -->
+          <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col gap-4">
+            <h4 class="font-bold text-lg text-[#1C1410]" data-de="Tage sperren (Urlaub)" data-ru="Блокировка дней (Отпуск)" data-en="Block Days (Vacation)">Блокировка дней (Отпуск)</h4>
+            
+            <div class="flex flex-col sm:flex-row gap-4 w-full">
+              <div class="flex-1">
+                <label class="block text-[10px] sm:text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2" data-de="Ausgewählte Daten" data-ru="Даты" data-en="Dates">Даты</label>
+                <div class="flex items-center gap-2 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
+                  <input type="date" id="massDateFrom" class="bg-transparent border-none text-sm font-semibold outline-none px-3 w-full text-gray-700 cursor-pointer rounded-xl hover:bg-white focus:bg-white transition-colors py-2.5 flex-1">
+                  <span class="text-gray-300 px-1">—</span>
+                  <input type="date" id="massDateTo" class="bg-transparent border-none text-sm font-semibold outline-none px-3 w-full text-gray-700 cursor-pointer rounded-xl hover:bg-white focus:bg-white transition-colors py-2.5 flex-1">
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-2 w-full mt-2">
+              <button onclick="applyMassDateBlock(true)" class="flex-1 px-6 py-3.5 bg-red-50 text-red-600 font-bold rounded-2xl hover:bg-red-100 transition-colors shadow-sm text-sm" data-de="Tage sperren" data-ru="Закрыть дни" data-en="Close Days">Закрыть дни</button>
+              <button onclick="applyMassDateBlock(false)" class="flex-1 px-6 py-3.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-2xl hover:bg-gray-50 transition-colors shadow-sm text-sm" data-de="Tage freigeben" data-ru="Открыть дни" data-en="Open Days">Открыть дни</button>
+            </div>
+          </div>
+
+          <!-- DAY DETAILED SLOTS -->
+          <div id="adminDayDetail" class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hidden flex-col">
+            <div class="flex flex-wrap gap-3 items-center mb-6 border-b border-gray-100 pb-4">
+              <h3 id="adminSelectedDateDisplay" class="text-2xl font-bold text-[#1C1410] font-heading mr-auto"></h3>
+              <button onclick="openCreateModal()" class="px-3 py-1.5 bg-[#1C1410] text-[#F5EFE8] text-xs font-bold rounded-xl hover:bg-[#C4826A] transition-colors whitespace-nowrap shadow-sm" data-de="+ Buchung" data-ru="+ Добавить запись" data-en="+ Booking">+ Добавить запись</button>
+              <button id="adminToggleFullDayBtn" class="px-4 py-1.5 text-xs font-bold rounded-xl transition-colors"></button>
+            </div>
+            
+            <!-- TIME RANGE PICKER -->
+            <div class="mb-6 pb-6 border-b border-gray-100">
+              <label class="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide" data-de="Uhrzeitbereich (Optional)" data-ru="Диапазон времени (Выбрать сразу несколько)" data-en="Time Range">Диапазон времени (Выбрать сразу несколько)</label>
+              <div class="flex flex-wrap sm:flex-nowrap items-center gap-3">
+                <div class="flex items-center gap-2 bg-gray-50 p-1.5 rounded-2xl border border-gray-100 w-full sm:w-fit">
+                  <select id="massTimeFrom" class="bg-transparent border-none text-sm font-semibold outline-none px-2 w-full sm:w-28 text-gray-700 text-center cursor-pointer rounded-xl hover:bg-white focus:bg-white transition-colors py-2.5 appearance-none"></select>
+                  <span class="text-gray-300 font-bold px-1">—</span>
+                  <select id="massTimeTo" class="bg-transparent border-none text-sm font-semibold outline-none px-2 w-full sm:w-28 text-gray-700 text-center cursor-pointer rounded-xl hover:bg-white focus:bg-white transition-colors py-2.5 appearance-none"></select>
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                  <button onclick="applyMassTimeBlock(true)" class="flex-1 sm:flex-none px-6 py-3 bg-red-50 text-red-600 font-bold rounded-2xl hover:bg-red-100 transition-colors shadow-sm text-sm whitespace-nowrap" data-de="Zeiten sperren" data-ru="Закрыть диапазон" data-en="Block times">Закрыть диапазон</button>
+                  <button onclick="applyMassTimeBlock(false)" class="flex-1 sm:flex-none px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-2xl hover:bg-gray-50 transition-colors shadow-sm text-sm whitespace-nowrap" data-de="Zeiten freigeben" data-ru="Открыть" data-en="Unblock times">Открыть</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- DRAG INSTRUCTION -->
+            <p class="text-xs text-gray-400 mb-4 italic text-center" data-de="...oder einzeln anklicken/auswählen" data-ru="...или потяните мышью по конкретным часам ниже" data-en="...or click/drag below">...или потяните мышью по конкретным часам ниже</p>
+            <div id="adminSlotsGrid" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 relative select-none"></div>
+            
+            <!-- FLOATING ACTION PANEL FOR SLOTS -->
+            <div id="slotActionPanel" class="hidden mt-6 p-4 bg-[#F5EFE8] rounded-2xl border border-[#E8DFD5] flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-up">
+              <span id="slotActionText" class="text-sm font-bold text-[#1C1410]"></span>
+              <div class="flex gap-2 w-full sm:w-auto">
+                <button onclick="commitSlotSelection()" id="slotActionConfirmBtn" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl font-bold transition-colors shadow-sm text-sm"></button>
+                <button onclick="cancelSlotSelection()" class="flex-1 sm:flex-none px-6 py-2.5 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors shadow-sm text-sm" data-de="Abbrechen" data-ru="Отмена" data-en="Cancel">Abbrechen</button>
+              </div>
+            </div>
+
+            <!-- DAY BOOKINGS LIST -->
+            <div id="adminDayBookings" class="hidden mt-6 pt-6 border-t border-gray-100">
+              <h4 class="font-bold text-sm text-[#1C1410] uppercase tracking-wide mb-4" data-de="Buchungen an diesem Tag" data-ru="Записи на этот день" data-en="Bookings on this day">Записи на этот день</h4>
+              <div id="adminDayBookingsList"></div>
+            </div>
+
+          </div>
+          <div id="adminDayEmpty" class="flex-1 min-h-[300px] flex items-center justify-center bg-white/50 border border-dashed border-gray-200 rounded-3xl text-gray-400 text-base font-medium" data-de="Bitte wählen Sie einen Tag aus." data-ru="Пожалуйста, выберите день." data-en="Please select a day.">Bitte wählen Sie einen Tag aus.</div>
+        </div>
+      </div>
+    </div> <!-- /viewKalender -->
+
+    <!-- TAB: PROZEDUREN -->
+    <div id="viewProzeduren" class="hidden">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-[#1C1410]" data-de="Prozeduren verwalten" data-ru="Управление процедурами" data-en="Manage Procedures">Prozeduren verwalten</h2>
+          <p class="text-sm text-gray-400 mt-0.5" data-de="Leistungen & Preisliste" data-ru="Услуги и прайс-лист" data-en="Services & Price List">Leistungen & Preisliste</p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <select id="procCategoryFilter" onchange="renderProcedures()" class="border border-gray-200 rounded-xl px-3 py-2 text-sm font-medium focus:outline-none focus:border-[#C4826A] bg-white">
+            <option value="all" data-de="Alle Kategorien" data-ru="Все категории" data-en="All categories">Alle Kategorien</option>
+          </select>
+          <button onclick="loadProcedures()" class="px-4 py-2 rounded-xl text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200" data-de="↻ Aktualisieren" data-ru="↻ Обновить" data-en="↻ Refresh">↻</button>
+          <button onclick="openProcedureModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-[#1C1410] text-white hover:bg-[#C4826A] transition-colors" data-de="+ Neue Prozedur" data-ru="+ Новая процедура" data-en="+ New Procedure">+ Neue Prozedur</button>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div id="procLoadingState" class="p-12 text-center text-gray-400">Laden...</div>
+        <div id="procEmptyState" class="p-12 text-center text-gray-400 hidden">Keine Prozeduren gefunden</div>
+        <div id="procTableWrap" class="hidden overflow-x-auto">
+          <table class="w-full min-w-[700px]">
+            <thead class="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" data-de="Kategorie" data-ru="Категория" data-en="Category">Kategorie</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" data-de="Subkategorie" data-ru="Субкатегория" data-en="Subcategory">Subkategorie</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" data-de="Name (DE)" data-ru="Название (DE)" data-en="Name (DE)">Name (DE)</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" data-de="Preis" data-ru="Цена" data-en="Price">Preis</th>
+                <th class="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide" data-de="Buchung" data-ru="Запись" data-en="Booking">Buchung</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide"></th>
+              </tr>
+            </thead>
+            <tbody id="procTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div> <!-- /viewProzeduren -->
+
+  </div>
+</div>
+
+<!-- CREATE BOOKING MODAL -->
+<div id="createModal" class="hidden fixed inset-0 z-50 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity" onclick="if(event.target===this) closeCreateModal()">
+  <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl transform transition-transform overflow-y-auto max-h-[90vh]">
+    <div class="flex justify-between items-center mb-6">
+      <h3 class="font-bold text-xl text-gray-900" data-de="Neue Buchung" data-ru="Новая запись" data-en="New Booking">Новая запись</h3>
+      <button onclick="closeCreateModal()" class="text-gray-400 hover:text-gray-700 transition-colors text-lg leading-none">&times;</button>
+    </div>
+    
+    <div class="space-y-4 mb-8">
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide" data-de="Name *" data-ru="Имя *" data-en="Name *">Имя *</label>
+        <input type="text" id="createName" placeholder="Z.b. Maria" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#C4826A] focus:ring-1 focus:ring-[#C4826A] transition-all">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide" data-de="Behandlung *" data-ru="Услуга *" data-en="Service *">Услуга *</label>
+        <input type="text" id="createService" placeholder="Z.b. Wimpernverlängerung" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#C4826A] focus:ring-1 focus:ring-[#C4826A] transition-all">
+      </div>
+      <div class="flex flex-col sm:flex-row gap-4">
+        <div class="flex-1">
+          <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide" data-de="Datum" data-ru="Дата" data-en="Date">Дата</label>
+          <input type="date" id="createDate" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none text-gray-700">
+        </div>
+        <div class="flex-1">
+          <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide" data-de="Uhrzeit *" data-ru="Время *" data-en="Time *">Время *</label>
+          <select id="createTime" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#C4826A] focus:ring-1 focus:ring-[#C4826A] transition-all bg-white cursor-pointer"></select>
+        </div>
+        <div class="flex-1">
+          <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide" data-de="Dauer *" data-ru="Длительность *" data-en="Duration *">Длительность *</label>
+          <select id="createDuration" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#C4826A] focus:ring-1 focus:ring-[#C4826A] transition-all bg-white cursor-pointer"></select>
+        </div>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-4">
+        <div class="flex-1">
+          <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide" data-de="Telefon" data-ru="Телефон" data-en="Phone">Телефон</label>
+          <input type="tel" id="createPhone" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#C4826A] focus:ring-1 focus:ring-[#C4826A] transition-all">
+        </div>
+        <div class="flex-1">
+          <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide" data-de="Email" data-ru="Email" data-en="Email">Email</label>
+          <input type="email" id="createEmail" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#C4826A] focus:ring-1 focus:ring-[#C4826A] transition-all">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide" data-de="Notiz" data-ru="Заметка" data-en="Notes">Заметка</label>
+        <textarea id="createNotes" rows="2" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#C4826A] focus:ring-1 focus:ring-[#C4826A] transition-all resize-none"></textarea>
+      </div>
+    </div>
+    
+    <div class="flex gap-3">
+      <button onclick="closeCreateModal()" class="flex-1 py-3.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors" data-de="Abbrechen" data-ru="Отмена" data-en="Cancel">Отмена</button>
+      <button onclick="createBooking()" id="createSaveBtn" class="flex-1 py-3.5 rounded-xl bg-[#1C1410] text-sm font-semibold text-white hover:bg-[#C4826A] transition-colors shadow-md" data-de="Speichern" data-ru="Сохранить" data-en="Save">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="editModal" class="hidden fixed inset-0 z-50 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity" onclick="if(event.target===this) closeEditModal()">
+  <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl transform transition-transform">
+    <div class="flex justify-between items-center mb-6">
+      <h3 class="font-bold text-xl text-gray-900" data-de="Buchung bearbeiten" data-ru="Изменить запись" data-en="Edit Booking">Buchung bearbeiten</h3>
+      <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-700 transition-colors text-lg leading-none">&times;</button>
+    </div>
+    <input type="hidden" id="editBookingId">
+    <div class="mb-5">
+      <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide" data-de="Datum" data-ru="Дата" data-en="Date">Datum</label>
+      <input type="date" id="editDate" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#C4826A] focus:ring-1 focus:ring-[#C4826A] transition-all">
+    </div>
+    <div class="mb-8">
+      <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide" data-de="Uhrzeit" data-ru="Время" data-en="Time">Uhrzeit</label>
+      <select id="editTime" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#C4826A] focus:ring-1 focus:ring-[#C4826A] transition-all bg-white cursor-pointer"></select>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="closeEditModal()" class="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors" data-de="Abbrechen" data-ru="Отмена" data-en="Cancel">Abbrechen</button>
+      <button onclick="saveEdit()" class="flex-1 py-3 rounded-xl bg-[#1C1410] text-sm font-semibold text-white hover:bg-[#C4826A] transition-colors shadow-md" data-de="Speichern" data-ru="Сохранить" data-en="Save">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROCEDURE MODAL -->
+<div id="procedureModal" class="hidden fixed inset-0 z-50 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this)closeProcedureModal()">
+  <div class="bg-white rounded-3xl p-8 w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
+    <div class="flex justify-between items-center mb-6">
+      <h3 id="procModalTitle" class="font-bold text-xl text-gray-900" data-de="Neue Prozedur" data-ru="Новая процедура" data-en="New Procedure">Neue Prozedur</h3>
+      <button onclick="closeProcedureModal()" class="text-gray-400 hover:text-gray-700 text-lg">&times;</button>
+    </div>
+    <input type="hidden" id="procEditId">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+      <!-- Category -->
+      <div class="sm:col-span-2">
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide" data-de="Kategorie ID *" data-ru="ID категории *" data-en="Category ID *">Kategorie ID *</label>
+        <div class="flex gap-2">
+          <select id="procCatIdSelect" onchange="onProcCatSelect()" class="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A] bg-white">
+            <option value="__new__" data-de="+ Neue Kategorie..." data-ru="+ Новая категория..." data-en="+ New category...">+ Neue Kategorie...</option>
+          </select>
+          <input type="text" id="procCatIdNew" data-de-placeholder="z.b. nails" data-ru-placeholder="напр. nails" data-en-placeholder="e.g. nails" placeholder="z.b. nails" class="hidden flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A]">
+        </div>
+      </div>
+      <div><label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase" data-de="Kategorie DE *" data-ru="Категория DE *" data-en="Category DE *">Kategorie DE *</label><input type="text" id="procCatDe" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A]"></div>
+      <div><label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase" data-de="Kategorie RU *" data-ru="Категория RU *" data-en="Category RU *">Kategorie RU *</label><input type="text" id="procCatRu" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A]"></div>
+      <div><label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase" data-de="Kategorie EN *" data-ru="Категория EN *" data-en="Category EN *">Kategorie EN *</label><input type="text" id="procCatEn" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A]"></div>
+      <div><label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase" data-de="Kategorie Reihenfolge" data-ru="Порядок категории" data-en="Category order">Kategorie Reihenfolge</label><input type="number" id="procCatSort" value="0" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A]"></div>
+      <!-- Subcategory -->
+      <div class="sm:col-span-2 border-t border-gray-100 pt-4">
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide" data-de="Subkategorie (optional)" data-ru="Субкатегория (необязательно)" data-en="Subcategory (optional)">Subkategorie (optional)</label>
+        <div class="flex gap-2">
+          <select id="procSubIdSelect" onchange="onProcSubSelect()" class="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A] bg-white">
+            <option value="" data-de="— keine —" data-ru="— нет —" data-en="— none —">— keine —</option>
+            <option value="__new__" data-de="+ Neue Subkategorie..." data-ru="+ Новая субкатегория..." data-en="+ New subcategory...">+ Neue Subkategorie...</option>
+          </select>
+          <input type="text" id="procSubIdNew" data-de-placeholder="z.b. classic" data-ru-placeholder="напр. classic" data-en-placeholder="e.g. classic" placeholder="z.b. classic" class="hidden flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A]">
+        </div>
+      </div>
+      <div id="subNameFields">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1 uppercase" data-de="Sub DE" data-ru="Sub DE" data-en="Sub DE">Sub DE</label><input type="text" id="procSubDe" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A]"></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1 uppercase" data-de="Sub RU" data-ru="Sub RU" data-en="Sub RU">Sub RU</label><input type="text" id="procSubRu" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A]"></div>
+          <div><label class="block text-xs font-semibold text-gray-500 mb-1 uppercase" data-de="Sub EN" data-ru="Sub EN" data-en="Sub EN">Sub EN</label><input type="text" id="procSubEn" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A]"></div>
+        </div>
+      </div>
+      <div><label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase" data-de="Sub Reihenfolge" data-ru="Порядок субкатегории" data-en="Subcategory order">Sub Reihenfolge</label><input type="number" id="procSubSort" value="0" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A]"></div>
+      <!-- Names -->
+      <div class="sm:col-span-2 border-t border-gray-100 pt-4">
+        <label class="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide" data-de="Name der Prozedur *" data-ru="Название процедуры *" data-en="Procedure name *">Name der Prozedur *</label>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div><label class="block text-xs text-gray-400 mb-1">DE *</label><input type="text" id="procNameDe" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A]"></div>
+          <div><label class="block text-xs text-gray-400 mb-1">RU *</label><input type="text" id="procNameRu" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A]"></div>
+          <div><label class="block text-xs text-gray-400 mb-1">EN *</label><input type="text" id="procNameEn" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A]"></div>
+        </div>
+      </div>
+      <!-- Price + booking + sort -->
+      <div><label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase" data-de="Preis *" data-ru="Цена *" data-en="Price *">Preis *</label><input type="text" id="procPrice" placeholder="50 €" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A]"></div>
+      <div><label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase" data-de="Reihenfolge" data-ru="Порядок" data-en="Order">Reihenfolge</label><input type="number" id="procSortOrder" value="0" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#C4826A]"></div>
+      <div class="sm:col-span-2 flex items-center gap-3">
+        <input type="checkbox" id="procShowInBooking" checked class="w-4 h-4 accent-[#C4826A]">
+        <label for="procShowInBooking" class="text-sm font-medium text-gray-700" data-de="In Buchungsformular anzeigen" data-ru="Показывать в форме записи" data-en="Show in booking form">In Buchungsformular anzeigen</label>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="closeProcedureModal()" class="flex-1 py-3.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50" data-de="Abbrechen" data-ru="Отмена" data-en="Cancel">Abbrechen</button>
+      <button onclick="saveProcedure()" id="procSaveBtn" class="flex-1 py-3.5 rounded-xl bg-[#1C1410] text-sm font-semibold text-white hover:bg-[#C4826A] transition-colors shadow-md" data-de="Speichern" data-ru="Сохранить" data-en="Save">Speichern</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- TOAST CONTAINER -->
+<div id="adminToastWrap" class="fixed top-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+
+<script src="assets/js/admin.js"></script>
+</body>
+</html>

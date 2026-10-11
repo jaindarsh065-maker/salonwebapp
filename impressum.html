@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impressum — Beauty Glanz</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{colors:{cream:'#F5EFE8',espresso:'#1C1410',rose:'#C4826A'},fontFamily:{heading:['"Playfair Display"','serif'],body:['"DM Sans"','sans-serif']}}}};
+</script>
+<style>
+body { font-family: 'DM Sans', sans-serif; background: #F5EFE8; color: #1C1410; overflow-x: hidden; }
+h1,h2,h3 { font-family: 'Playfair Display', serif; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto; }
+</style>
+</head>
+<body class="min-h-screen py-12 sm:py-20 px-4 sm:px-6">
+  <div class="max-w-3xl mx-auto bg-white/60 backdrop-blur-md p-6 sm:p-8 md:p-12 rounded-3xl shadow-sm border border-espresso/5">
+    <a href="/" class="inline-flex items-center gap-2 text-rose hover:text-espresso transition-colors text-sm font-bold uppercase tracking-widest mb-8 sm:mb-10">
+      <span>←</span> Zurück
+    </a>
+    <h1 class="text-3xl sm:text-4xl md:text-5xl text-espresso mb-8">Impressum</h1>
+    
+    <div class="space-y-6 text-espresso/80 leading-relaxed font-body text-sm sm:text-base">
+      <section>
+        <h2 class="text-lg sm:text-xl font-bold text-espresso mb-2">Angaben gemäß § 5 TMG</h2>
+        <p>
+          Ana Bengart<br>
+          Beauty Glanz<br>
+          Theaterstraße 3<br>
+          34117 Kassel<br>
+          Deutschland
+        </p>
+        <p class="mt-4">
+          Telefon: +49 176 75881485<br>
+          E-Mail: Beauty.Glanz@web.de
+        </p>
+      </section>
+
+      <div class="border-t border-espresso/10 my-8"></div>
+
+      <section>
+        <h2 class="text-lg sm:text-xl font-bold text-espresso mb-2">Verantwortlich für den Inhalt nach § 18 MStV</h2>
+        <p>
+          Ana Bengart<br>
+          Theaterstraße 3<br>
+          34117 Kassel
+        </p>
+      </section>
+
+      <div class="border-t border-espresso/10 my-8"></div>
+
+      <section>
+        <h2 class="text-lg sm:text-xl font-bold text-espresso mb-2">Hinweis gemäß § 19 UStG</h2>
+        <p>
+          Als Kleinunternehmer im Sinne von § 19 UStG wird keine Umsatzsteuer berechnet.
+        </p>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,1808 @@
+/* ============================================================
+   V ROHIT RAI UNISEX SALON — design system
+   ------------------------------------------------------------
+   Quiet luxury: warm paper, one serif used large, one sans used
+   small, brass as punctuation rather than decoration. No photographs
+   ship with this build, so the visual weight is carried by type,
+   measured whitespace, hairline rules and the .plate component —
+   a designed frame that becomes a real <img> the moment the salon
+   supplies one.
+
+   Order: tokens -> reset -> primitives -> motion -> sections.
+   ============================================================ */
+
+/* ============================================================
+   1. TOKENS
+   ============================================================ */
+:root {
+  /* --- paper and ink --- */
+  --ivory:        #F7F3ED;
+  --cream:        #EFE8DF;
+  --sand:         #E4D9CA;
+  --stone:        #CBBEAE;
+  --taupe:        #8B7B6B;
+  --espresso:     #1C1815;
+  --ink:          #2A241F;
+
+  /* Brass is the only chromatic accent. Muted on purpose: a brighter
+     gold reads costume rather than considered. */
+  --brass:        #A17746;
+  --brass-soft:   #C6A478;
+  --brass-wash:   rgba(161, 119, 70, 0.10);
+  /* --brass reaches only 3.6:1 on ivory, which is fine for the large
+     display italics but not for 12-14px text. Small brass type uses this
+     darker mix instead: 5.3:1 on ivory, 4.9:1 on the cream sections. */
+  --brass-text:   #845C32;
+
+  /* --- semantic --- */
+  --bg:           var(--ivory);
+  --bg-alt:       var(--cream);
+  --bg-deep:      var(--espresso);
+  --fg:           var(--espresso);
+  --fg-muted:     #5C5147;
+  /* Darker than --taupe on purpose. Taupe is for hairlines and glyphs;
+     this is for type, and clears 4.5:1 on ivory (5.4:1). */
+  --fg-faint:     #6F6155;
+  --on-deep:      #F2ECE3;
+  --on-deep-mute: rgba(242, 236, 227, 0.68);
+  /* 0.56, not 0.42: the lighter value measured 3.65:1 on espresso. */
+  --on-deep-faint:rgba(242, 236, 227, 0.56);
+  --line:         rgba(28, 24, 21, 0.14);
+  --line-soft:    rgba(28, 24, 21, 0.08);
+  --line-deep:    rgba(242, 236, 227, 0.18);
+
+  --ok:           #3F6B4F;
+  --warn:         #8A5A2B;
+  --error:        #93352B;
+
+  /* --- type --- */
+  --serif: 'Instrument Serif', 'Hoefler Text', Georgia, 'Times New Roman', serif;
+  --sans:  'Inter Tight', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* Fluid scale. Clamped at both ends so nothing collapses on a 320px
+     phone or balloons on a 2560px display. */
+  --t-hero:   clamp(3.25rem, 1.6rem + 8.2vw, 9rem);
+  --t-d1:     clamp(2.35rem, 1.3rem + 4.4vw, 5rem);
+  --t-d2:     clamp(1.9rem,  1.2rem + 2.8vw, 3.25rem);
+  --t-d3:     clamp(1.45rem, 1.1rem + 1.4vw, 2rem);
+  --t-lede:   clamp(1.05rem, 0.98rem + 0.5vw, 1.3rem);
+  --t-body:   clamp(0.95rem, 0.92rem + 0.2vw, 1.0625rem);
+  --t-small:  0.875rem;
+  --t-micro:  0.75rem;
+
+  --lh-tight: 0.98;
+  --lh-snug:  1.14;
+  --lh-body:  1.62;
+
+  --track-eyebrow: 0.2em;
+  --track-tight:  -0.015em;
+
+  /* --- space --- */
+  --sp-1: 0.5rem;  --sp-2: 0.75rem; --sp-3: 1rem;    --sp-4: 1.5rem;
+  --sp-5: 2rem;    --sp-6: 3rem;    --sp-7: 4.5rem;  --sp-8: 6.5rem;
+  --sp-9: 9rem;
+
+  --gutter:  clamp(1.25rem, 4vw, 3rem);
+  --measure: 62ch;
+  --shell:   1360px;
+
+  /* Vertical rhythm for a section. One variable, so the page keeps a
+     consistent beat from the hero to the footer. */
+  --section-y: clamp(4.5rem, 9vw, 9.5rem);
+
+  /* --- lines and radii --- */
+  --r-sm: 2px;
+  --r-md: 3px;
+  --r-pill: 999px;
+
+  /* --- motion ---
+     One easing for entrances, one for interface feedback. Using two
+     curves everywhere is what makes unrelated sections feel related. */
+  --ease-out:  cubic-bezier(0.16, 0.84, 0.28, 1);
+  --ease-soft: cubic-bezier(0.33, 0.9, 0.44, 1);
+  --d-fast:   180ms;
+  --d-mid:    420ms;
+  --d-slow:   900ms;
+  --d-reveal: 1100ms;
+
+  --header-h: 76px;
+
+  /* Paper grain. One tiny inline SVG, reused by every surface that
+     needs texture, instead of a raster file per section. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   2. RESET
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  /* Native smooth scroll only — no scroll hijacking library, so the
+     wheel, trackpad, keyboard and screen-reader all behave normally. */
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* Anchor targets clear the fixed header instead of hiding under it.
+   This is also what stops a keyboard user tabbing to a heading that is
+   scrolled out of sight behind the bar. */
+:target,
+section[id],
+[id]:not(body) {
+  scroll-margin-top: calc(var(--header-h) + 1.5rem);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+  font-size: var(--t-body);
+  line-height: var(--lh-body);
+  font-weight: 350;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+img, svg, video { display: block; max-width: 100%; }
+img { height: auto; }
+
+h1, h2, h3, h4, p, figure, dl, dd, blockquote { margin: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+
+a { color: inherit; text-decoration: none; }
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+input, textarea, select { font: inherit; color: inherit; }
+
+/* Focus: visible, warm, and never removed. The ring sits outside the
+   control so it survives on dark surfaces too. */
+:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 3px;
+  border-radius: var(--r-sm);
+}
+.on-deep :focus-visible { outline-color: var(--brass-soft); }
+
+::selection { background: var(--brass); color: var(--ivory); }
+
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translate(-50%, -140%);
+  z-index: 200;
+  background: var(--espresso);
+  color: var(--on-deep);
+  padding: 0.8rem 1.4rem;
+  font-size: var(--t-small);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: transform var(--d-fast) var(--ease-soft);
+}
+.skip-link:focus { transform: translate(-50%, 0); }
+
+/* ============================================================
+   3. PRIMITIVES
+   ============================================================ */
+.shell {
+  width: 100%;
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+.shell-narrow { max-width: 860px; }
+
+.section {
+  position: relative;
+  padding-block: var(--section-y);
+}
+.section > .shell { position: relative; z-index: 1; }
+
+/* Dark sections. `.on-deep` also retargets focus rings and form colours. */
+.on-deep {
+  background: var(--bg-deep);
+  color: var(--on-deep);
+}
+.on-deep::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+.on-alt { background: var(--bg-alt); }
+
+/* --- type primitives --- */
+.eyebrow {
+  font-size: var(--t-micro);
+  font-weight: 500;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.eyebrow::before {
+  content: '';
+  width: clamp(18px, 3vw, 38px);
+  height: 1px;
+  background: var(--brass);
+  flex: none;
+}
+.on-deep .eyebrow { color: var(--on-deep-mute); }
+.on-deep .eyebrow::before { background: var(--brass-soft); }
+.eyebrow-plain::before { display: none; }
+
+.display {
+  font-family: var(--serif);
+  font-weight: 400;
+  letter-spacing: var(--track-tight);
+  line-height: var(--lh-snug);
+  text-wrap: balance;
+}
+.d1 { font-size: var(--t-d1); }
+.d2 { font-size: var(--t-d2); }
+.d3 { font-size: var(--t-d3); }
+
+/* Italic is the house emphasis — it reads editorial where bold would
+   read commercial. */
+.em { font-style: italic; color: var(--brass); }
+.on-deep .em { color: var(--brass-soft); }
+
+.lede {
+  font-size: var(--t-lede);
+  line-height: 1.56;
+  color: var(--fg-muted);
+  max-width: 52ch;
+}
+.on-deep .lede { color: var(--on-deep-mute); }
+
+.small { font-size: var(--t-small); }
+.micro {
+  font-size: var(--t-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+.on-deep .micro { color: var(--on-deep-faint); }
+
+.rule {
+  height: 1px;
+  background: var(--line);
+  border: 0;
+  margin: 0;
+}
+.on-deep .rule { background: var(--line-deep); }
+
+/* --- buttons ---
+   Two weights only: solid for the one action that matters on a
+   screen, hairline for everything else. */
+.btn {
+  --btn-bg: var(--espresso);
+  --btn-fg: var(--ivory);
+  --btn-line: var(--espresso);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  min-height: 48px;
+  padding: 0.95rem 1.7rem;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  border: 1px solid var(--btn-line);
+  border-radius: var(--r-pill);
+  font-size: var(--t-small);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color var(--d-fast) var(--ease-soft),
+              border-color var(--d-fast) var(--ease-soft),
+              transform var(--d-fast) var(--ease-soft);
+}
+/* The fill slides rather than fades: a transform, so it composites. */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--brass);
+  transform: translateY(101%);
+  transition: transform var(--d-mid) var(--ease-out);
+}
+.btn:hover::after, .btn:focus-visible::after { transform: translateY(0); }
+.btn:hover, .btn:focus-visible { border-color: var(--brass); color: var(--ivory); }
+.btn:active { transform: translateY(1px); }
+
+.btn-ghost {
+  --btn-bg: transparent;
+  --btn-fg: var(--espresso);
+  --btn-line: var(--line);
+}
+.btn-ghost:hover, .btn-ghost:focus-visible { color: var(--ivory); }
+
+.on-deep .btn-ghost { --btn-fg: var(--on-deep); --btn-line: var(--line-deep); }
+.on-deep .btn { --btn-bg: var(--ivory); --btn-fg: var(--espresso); --btn-line: var(--ivory); }
+
+.btn[disabled], .btn[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-arrow svg { width: 15px; height: 15px; transition: transform var(--d-mid) var(--ease-out); }
+.btn-arrow:hover svg, .btn-arrow:focus-visible svg { transform: translateX(4px); }
+
+/* Text link with a rule that draws itself in. */
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: var(--t-small);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding-bottom: 3px;
+  background-image: linear-gradient(var(--brass), var(--brass));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size var(--d-mid) var(--ease-out), color var(--d-fast) linear;
+}
+.link:hover, .link:focus-visible { background-size: 100% 1px; color: var(--brass-text); }
+.on-deep .link:hover, .on-deep .link:focus-visible { color: var(--brass-soft); }
+.link svg { width: 13px; height: 13px; transition: transform var(--d-mid) var(--ease-out); }
+.link:hover svg { transform: translateX(3px); }
+
+/* ============================================================
+   4. THE PLATE
+   ------------------------------------------------------------
+   Stands in for photography that does not exist yet, and is designed
+   to be looked at rather than apologised for: warm gradient wash,
+   grain, a hairline frame, an original line-art glyph and a caption
+   naming the photograph that belongs there. `.plate.has-image` drops
+   all of it and shows the real picture full-bleed.
+   ============================================================ */
+.plate {
+  /* Per-plate variation lives in these three properties, so a grid of
+     slots reads as a set of different images rather than one tile
+     repeated. Overridden per nth-child below. */
+  --plate-angle: 152deg;
+  --plate-x: 18%;
+  --plate-y: 8%;
+
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at var(--plate-x) var(--plate-y), rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0) 55%),
+    radial-gradient(90% 80% at 85% 92%,  var(--brass-wash) 0%, rgba(0, 0, 0, 0) 60%),
+    /* The dark stop stays light enough that the caption text on top of
+       it still clears 4.5:1 wherever the gradient lands. */
+    linear-gradient(var(--plate-angle), var(--sand) 0%, var(--cream) 48%, #D8CCBC 100%);
+  border: 1px solid var(--line-soft);
+  isolation: isolate;
+}
+.plate::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 2;
+}
+/* A single sweep of light, fixed — not an animation loop. */
+.plate::after {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(104deg, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0) 62%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.plate-inner {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.1rem, 2.2vw, 1.9rem);
+}
+.plate-glyph {
+  width: clamp(44px, 9vw, 86px);
+  height: auto;
+  color: var(--taupe);
+  opacity: 0.5;
+  margin-inline: auto;
+  margin-block: auto;
+}
+.plate-glyph path, .plate-glyph circle, .plate-glyph line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.plate-caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  font-size: var(--t-micro);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4A4139;
+}
+.plate-caption b { font-weight: 500; }
+.plate-caption i {
+  font-style: normal;
+  /* Differentiated by colour rather than opacity: opacity would blend
+     this back toward the plate and undo the contrast. */
+  color: #5C5147;
+  white-space: nowrap;
+}
+
+/* With a real photograph: the frame furniture gets out of the way. */
+.plate.has-image { background: var(--sand); }
+.plate.has-image::before { opacity: 0.18; }
+.plate.has-image::after { display: none; }
+.plate.has-image .plate-inner { display: none; }
+.plate img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: relative;
+  z-index: 0;
+}
+
+.plate-tall   { aspect-ratio: 3 / 4; }
+.plate-square { aspect-ratio: 1 / 1; }
+.plate-wide   { aspect-ratio: 4 / 3; }
+.plate-pano   { aspect-ratio: 16 / 10; }
+
+/* ============================================================
+   5. MOTION
+   ------------------------------------------------------------
+   Two rules make this safe:
+   - the hidden state only exists under html.js, so with JavaScript
+     off or broken every word is visible and in place;
+   - prefers-reduced-motion removes transforms and clip paths rather
+     than just shortening them, and nothing is left mid-reveal.
+   ============================================================ */
+.reveal, .mask, .word i { will-change: auto; }
+
+html.js .reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity var(--d-reveal) var(--ease-out),
+              transform var(--d-reveal) var(--ease-out);
+}
+html.js .reveal.in { opacity: 1; transform: none; }
+
+html.js .reveal-d1 { transition-delay: 90ms; }
+html.js .reveal-d2 { transition-delay: 180ms; }
+html.js .reveal-d3 { transition-delay: 270ms; }
+html.js .reveal-d4 { transition-delay: 360ms; }
+
+/* Cinematic image reveal: a clip path opening upward, plus a slow
+   counter-scale on the content so the frame feels like it is settling
+   rather than sliding. */
+html.js .mask {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 1250ms var(--ease-out);
+}
+html.js .mask.in { clip-path: inset(0 0 0 0); }
+html.js .mask > * { transform: scale(1.06); transition: transform 1600ms var(--ease-out); }
+html.js .mask.in > * { transform: scale(1); }
+
+/* Line-by-line heading reveal. The <i> slides inside an overflow
+   hidden span, so letters never clip against the baseline. */
+.word { display: inline-block; overflow: hidden; vertical-align: top; }
+.word i { display: inline-block; font-style: inherit; }
+html.js .word i { transform: translateY(104%); transition: transform 1000ms var(--ease-out); }
+html.js .word.in i { transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  html.js .reveal,
+  html.js .mask,
+  html.js .mask > *,
+  html.js .word i {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    transition: none !important;
+  }
+}
+
+/* ============================================================
+   6. HEADER
+   ============================================================ */
+.header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 100;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  /* Colour and a hairline, no blur: a large backdrop-filter is the
+     single most expensive thing a sticky header can do on a phone. */
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background var(--d-mid) var(--ease-soft),
+              border-color var(--d-mid) var(--ease-soft),
+              height var(--d-mid) var(--ease-soft);
+}
+.header.docked {
+  height: 64px;
+  background: var(--ivory);
+  border-bottom-color: var(--line-soft);
+}
+.header-in {
+  width: 100%;
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.wordmark {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex: none;
+  margin-right: auto;
+}
+.wordmark-mark {
+  width: 38px; height: 38px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  color: var(--fg);
+  transition: border-color var(--d-fast) linear, color var(--d-fast) linear;
+}
+.wordmark:hover .wordmark-mark { border-color: var(--brass); color: var(--brass); }
+.wordmark-text { display: flex; flex-direction: column; line-height: 1.05; }
+.wordmark-name {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  letter-spacing: 0.01em;
+}
+.wordmark-sub {
+  font-size: 0.5625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+
+.nav { display: flex; align-items: center; gap: clamp(1rem, 2.2vw, 2.2rem); }
+.nav-link {
+  position: relative;
+  font-size: var(--t-small);
+  letter-spacing: 0.04em;
+  color: var(--fg-muted);
+  padding-block: 0.4rem;
+  transition: color var(--d-fast) linear;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 100%; height: 1px;
+  background: var(--brass);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--d-mid) var(--ease-out);
+}
+.nav-link:hover, .nav-link:focus-visible { color: var(--fg); }
+.nav-link:hover::after, .nav-link:focus-visible::after { transform: scaleX(1); }
+/* Active section, set by the motion layer from an IntersectionObserver. */
+.nav-link[aria-current='true'] { color: var(--fg); }
+.nav-link[aria-current='true']::after { transform: scaleX(1); }
+
+.header-actions { display: flex; align-items: center; gap: var(--sp-2); flex: none; }
+.header .btn { min-height: 42px; padding: 0.6rem 1.25rem; }
+
+.icon-btn {
+  width: 42px; height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--fg-muted);
+  transition: color var(--d-fast) linear, border-color var(--d-fast) linear;
+}
+.icon-btn svg { width: 17px; height: 17px; }
+.icon-btn:hover, .icon-btn:focus-visible { color: var(--brass); border-color: var(--brass); }
+
+.burger { display: none; width: 42px; height: 42px; place-items: center; }
+.burger span {
+  display: block;
+  width: 20px; height: 1px;
+  background: var(--fg);
+  position: relative;
+}
+.burger span::before, .burger span::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 20px; height: 1px;
+  background: var(--fg);
+}
+.burger span::before { top: -6px; }
+.burger span::after  { top: 6px; }
+
+@media (max-width: 1000px) {
+  .nav { display: none; }
+  .burger { display: grid; }
+  .header-actions .btn span { display: none; }
+}
+
+/* --- mobile drawer --- */
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: var(--ivory);
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-4) var(--gutter) max(var(--sp-5), env(safe-area-inset-bottom));
+  transform: translateY(-100%);
+  transition: transform 520ms var(--ease-out);
+  overflow-y: auto;
+}
+/* `display: flex` above outranks the user agent's `[hidden] {display:none}`,
+   which would otherwise leave six off-screen links in the tab order on
+   every desktop page load. Restore it explicitly. */
+.drawer[hidden] { display: none; }
+.drawer[data-open='true'] { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .drawer { transition: none; }
+}
+.drawer-top { display: flex; align-items: center; justify-content: space-between; }
+.drawer-close {
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  font-size: 1.1rem;
+}
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-block: auto;
+  padding-block: var(--sp-5);
+}
+.drawer-nav a {
+  font-family: var(--serif);
+  font-size: clamp(1.9rem, 9vw, 2.6rem);
+  line-height: 1.22;
+  padding-block: 0.25rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.9rem;
+}
+.drawer-nav a span {
+  font-family: var(--sans);
+  font-size: var(--t-micro);
+  color: var(--brass-text);
+  letter-spacing: 0.12em;
+}
+.drawer-foot { display: grid; gap: var(--sp-3); }
+
+/* ============================================================
+   7. HERO
+   ============================================================ */
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  align-items: center;
+  padding-top: calc(var(--header-h) + var(--sp-5));
+  padding-bottom: var(--sp-6);
+  overflow: hidden;
+}
+/* Warm wash behind the type. Static gradients, so there is nothing
+   repainting while the visitor reads. */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(70% 55% at 12% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 60%),
+    radial-gradient(60% 60% at 88% 78%, var(--brass-wash) 0%, rgba(0, 0, 0, 0) 65%);
+  pointer-events: none;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  opacity: 0.4;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.62fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: center;
+}
+
+.hero-kicker { margin-bottom: var(--sp-4); }
+
+.hero-title {
+  font-family: var(--serif);
+  font-size: var(--t-hero);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.025em;
+  font-weight: 400;
+}
+.hero-title .word { margin-right: 0.18em; }
+.hero-title .line { display: block; }
+.hero-title .line-2 { padding-left: clamp(0px, 5vw, 86px); }
+
+.hero-sub {
+  margin-top: var(--sp-4);
+  font-size: var(--t-lede);
+  line-height: 1.52;
+  color: var(--fg-muted);
+  max-width: 44ch;
+}
+
+.hero-cta {
+  margin-top: var(--sp-5);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.hero-meta {
+  margin-top: var(--sp-6);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-4);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line-soft);
+}
+.hero-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--t-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+.hero-meta-item svg { width: 13px; height: 13px; color: var(--brass); flex: none; }
+.hero-meta-sep { width: 1px; height: 12px; background: var(--line); }
+
+.hero-stage { position: relative; }
+.hero-stage .plate { aspect-ratio: 5 / 7; }
+/* Brass hairline that tracks the plate's left edge — a small piece of
+   art direction that costs nothing. */
+.hero-stage::before {
+  content: '';
+  position: absolute;
+  top: -6%;
+  bottom: -6%;
+  left: -28px;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--brass-soft) 22%, var(--brass-soft) 78%, transparent);
+}
+.hero-stage-label {
+  position: absolute;
+  left: -28px;
+  bottom: 12%;
+  transform: translateX(-50%) rotate(180deg);
+  writing-mode: vertical-rl;
+  font-size: var(--t-micro);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--taupe);
+  background: var(--bg);
+  padding-block: 0.7rem;
+}
+
+.hero-cue {
+  position: absolute;
+  left: var(--gutter);
+  bottom: var(--sp-4);
+  /* Only drawn when the viewport is tall enough to have room below the
+     meta row; on a short laptop screen the two collide. */
+  display: none;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: var(--t-micro);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+.hero-cue i {
+  display: block;
+  width: 1px; height: 34px;
+  background: linear-gradient(to bottom, var(--brass), transparent);
+}
+@media (min-height: 860px) and (min-width: 901px) {
+  .hero-cue { display: flex; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-cue i { animation: cue 2.6s var(--ease-soft) infinite; transform-origin: top; }
+}
+@keyframes cue {
+  0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
+  50%      { transform: scaleY(1);   opacity: 1; }
+}
+
+@media (max-width: 900px) {
+  .hero { min-height: auto; padding-top: calc(var(--header-h) + var(--sp-4)); }
+  .hero-grid { grid-template-columns: 1fr; gap: var(--sp-5); }
+  /* The headline and the booking action come first on a phone; the
+     plate follows. Nothing important is pushed below the fold. */
+  .hero-stage { order: 2; }
+  .hero-copy { order: 1; }
+  .hero-stage::before, .hero-stage-label { display: none; }
+  .hero-stage .plate { aspect-ratio: 4 / 3; }
+  .hero-cue { display: none; }
+  .hero-meta { margin-top: var(--sp-5); }
+}
+
+/* ============================================================
+   8. MARQUEE
+   ------------------------------------------------------------
+   Decorative, aria-hidden, and it stops dead under reduced motion
+   rather than running a permanent animation loop.
+   ============================================================ */
+.marquee {
+  border-block: 1px solid var(--line-soft);
+  padding-block: var(--sp-3);
+  overflow: hidden;
+  background: var(--bg-alt);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  gap: var(--sp-4);
+  align-items: center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .marquee-track { animation: slide 44s linear infinite; }
+}
+@keyframes slide { to { transform: translateX(-50%); } }
+.marquee-group {
+  display: flex;
+  gap: var(--sp-4);
+  align-items: center;
+  padding-right: var(--sp-4);
+}
+.marquee-item {
+  font-family: var(--serif);
+  font-size: clamp(1.1rem, 2.4vw, 1.6rem);
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+.marquee-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--brass); flex: none; }
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { flex-wrap: wrap; width: 100%; justify-content: center; }
+  .marquee-group:nth-child(2) { display: none; }
+}
+
+/* ============================================================
+   9. STATEMENT
+   ============================================================ */
+.statement { position: relative; }
+.statement-grid {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 2.1fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  align-items: start;
+}
+.statement-side {
+  position: sticky;
+  top: calc(var(--header-h) + var(--sp-5));
+  display: grid;
+  gap: var(--sp-4);
+}
+/* Scroll-linked progress rule. --p is written by the motion layer from
+   a single rAF-batched IntersectionObserver/scroll handler. */
+.statement-progress {
+  width: 1px;
+  height: clamp(90px, 18vh, 190px);
+  background: var(--line);
+  position: relative;
+}
+.statement-progress::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 100%;
+  background: var(--brass);
+  transform: scaleY(var(--p, 0));
+  transform-origin: top;
+}
+.statement-body {
+  font-family: var(--serif);
+  font-size: clamp(1.6rem, 1rem + 2.5vw, 3rem);
+  line-height: 1.26;
+  letter-spacing: -0.015em;
+  max-width: 30ch;
+}
+.statement-body .word { margin-right: 0.2em; }
+
+.pillars {
+  margin-top: var(--sp-7);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+  gap: var(--sp-4) var(--sp-5);
+  border-top: 1px solid var(--line-soft);
+  padding-top: var(--sp-5);
+}
+.pillar-n {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  color: var(--brass-text);
+  display: block;
+  margin-bottom: 0.6rem;
+}
+.pillar h3 { font-size: 1.0625rem; font-weight: 500; margin-bottom: 0.35rem; }
+.pillar p { font-size: var(--t-small); color: var(--fg-muted); line-height: 1.6; }
+
+@media (max-width: 860px) {
+  .statement-grid { grid-template-columns: 1fr; gap: var(--sp-4); }
+  .statement-side { position: static; }
+  .statement-progress { display: none; }
+  .statement-body { max-width: none; }
+}
+
+/* ============================================================
+   10. SERVICES
+   ------------------------------------------------------------
+   An editorial 12-column grid, not a row of identical cards. Spans
+   alternate so the eye moves diagonally down the section, and one
+   card in each pair carries a plate.
+   ============================================================ */
+.services-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+  gap: var(--sp-4) var(--sp-6);
+  align-items: end;
+  margin-bottom: var(--sp-6);
+}
+@media (max-width: 860px) {
+  .services-head { grid-template-columns: 1fr; }
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: clamp(1rem, 2vw, 1.75rem);
+}
+
+.service {
+  position: relative;
+  grid-column: span 6;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.4rem, 2.4vw, 2.1rem);
+  background: var(--bg-alt);
+  border: 1px solid var(--line-soft);
+  overflow: hidden;
+  isolation: isolate;
+  transition: border-color var(--d-mid) var(--ease-soft),
+              transform var(--d-mid) var(--ease-soft);
+}
+/* Alternating emphasis: 7/5, 5/7, repeating every four cards. */
+.service:nth-child(4n + 1) { grid-column: span 7; }
+.service:nth-child(4n + 2) { grid-column: span 5; }
+.service:nth-child(4n + 3) { grid-column: span 5; }
+.service:nth-child(4n + 4) { grid-column: span 7; }
+
+/* The warm fill rises on hover AND on focus-within, so a keyboard
+   user gets the same feedback a mouse user does. */
+.service::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(170deg, var(--sand), var(--cream));
+  opacity: 0;
+  transition: opacity var(--d-mid) var(--ease-soft);
+}
+.service:hover, .service:focus-within {
+  border-color: var(--stone);
+  transform: translateY(-3px);
+}
+.service:hover::before, .service:focus-within::before { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .service:hover, .service:focus-within { transform: none; }
+}
+
+.service-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+.service-n {
+  font-family: var(--serif);
+  font-size: var(--t-small);
+  color: var(--brass-text);
+  letter-spacing: 0.08em;
+}
+.service-count {
+  font-size: var(--t-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+.service-name {
+  font-family: var(--serif);
+  font-size: clamp(1.4rem, 1rem + 1.5vw, 2.1rem);
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+}
+.service-blurb {
+  margin-top: var(--sp-2);
+  font-size: var(--t-small);
+  line-height: 1.62;
+  color: var(--fg-muted);
+  max-width: 44ch;
+}
+.service-items {
+  margin-top: var(--sp-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.service-item {
+  font-size: var(--t-micro);
+  letter-spacing: 0.04em;
+  color: var(--fg-muted);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-pill);
+  padding: 0.3rem 0.7rem;
+  background: rgba(255, 255, 255, 0.5);
+}
+.service-foot {
+  margin-top: auto;
+  padding-top: var(--sp-5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.service-plate { margin-top: var(--sp-4); }
+.service-plate .plate { aspect-ratio: 16 / 9; }
+
+@media (max-width: 1000px) {
+  .service, .service:nth-child(4n + 1), .service:nth-child(4n + 2),
+  .service:nth-child(4n + 3), .service:nth-child(4n + 4) { grid-column: span 6; }
+}
+@media (max-width: 720px) {
+  .service, .service:nth-child(4n + 1), .service:nth-child(4n + 2),
+  .service:nth-child(4n + 3), .service:nth-child(4n + 4) { grid-column: span 12; }
+}
+
+.services-note {
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+/* ============================================================
+   11. GALLERY
+   ============================================================ */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: clamp(0.75rem, 1.6vw, 1.25rem);
+  align-items: start;
+}
+
+/* Each cell is sized by aspect ratio rather than by a row span.
+   An earlier version used `grid-auto-rows: 10px` with spans, but the
+   row gap is counted between every spanned row, so a "span 40" cell
+   came out around 870px tall and cropped the life out of a portrait
+   photograph. Aspect ratios keep each frame close to the shape of the
+   picture inside it. */
+.gallery-cell .plate { height: auto; aspect-ratio: 3 / 4; }
+.gallery-cell[data-span='wide']   .plate { aspect-ratio: 4 / 3; }
+.gallery-cell[data-span='normal'] .plate { aspect-ratio: 1 / 1; }
+.gallery-cell[data-span='tall']   .plate { aspect-ratio: 3 / 4; }
+
+/* The staggered, magazine-ish rhythm now comes from offsetting every
+   second cell instead of from unequal row spans. */
+@media (min-width: 900px) {
+  .gallery-cell:nth-child(even) { margin-top: clamp(1.5rem, 4vw, 3.5rem); }
+}
+
+/* Light falls from a different direction in each frame. */
+.gallery-cell:nth-child(6n + 2) .plate { --plate-angle: 118deg; --plate-x: 74%; --plate-y: 16%; }
+.gallery-cell:nth-child(6n + 3) .plate { --plate-angle: 196deg; --plate-x: 32%; --plate-y: 82%; }
+.gallery-cell:nth-child(6n + 4) .plate { --plate-angle: 142deg; --plate-x: 88%; --plate-y: 60%; }
+.gallery-cell:nth-child(6n + 5) .plate { --plate-angle: 168deg; --plate-x: 10%; --plate-y: 44%; }
+.gallery-cell:nth-child(6n + 6) .plate { --plate-angle: 104deg; --plate-x: 56%; --plate-y: 6%; }
+.gallery-cell button.plate { width: 100%; display: block; text-align: left; }
+.gallery-cell button.plate:not(.has-image) { cursor: default; }
+
+@media (max-width: 620px) {
+  /* One column on a phone: every frame takes the photograph's own
+     portrait shape rather than being forced square. */
+  .gallery-cell .plate,
+  .gallery-cell[data-span='wide'] .plate,
+  .gallery-cell[data-span='normal'] .plate { aspect-ratio: 4 / 5; }
+}
+
+/* --- lightbox --- */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 180;
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+  background: rgba(16, 13, 11, 0.9);
+  opacity: 0;
+  /* Not `visibility`: it is transitioned, so the computed value lags
+     behind the attribute and the close button cannot take focus until
+     the transition has run. pointer-events does the same job for the
+     mouse, and [hidden] below keeps it out of the accessibility tree. */
+  pointer-events: none;
+  transition: opacity var(--d-mid) var(--ease-soft);
+}
+/* `display: grid` above outranks the user agent's [hidden] rule, so
+   without this the dialog stays in the layout and in the tab order. */
+.lightbox[hidden] { display: none; }
+.lightbox[data-open='true'] { opacity: 1; pointer-events: auto; }
+.lightbox img { max-width: min(92vw, 1100px); max-height: 86vh; object-fit: contain; }
+.lightbox-close {
+  position: absolute;
+  top: var(--sp-3); right: var(--sp-3);
+  width: 46px; height: 46px;
+  display: grid; place-items: center;
+  border: 1px solid var(--line-deep);
+  border-radius: 50%;
+  color: var(--on-deep);
+  font-size: 1.2rem;
+}
+.lightbox-cap {
+  margin-top: var(--sp-3);
+  text-align: center;
+  color: var(--on-deep-mute);
+  font-size: var(--t-small);
+}
+
+/* ============================================================
+   12. EXPERIENCE
+   ============================================================ */
+.exp-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: center;
+}
+.exp-list { margin-top: var(--sp-5); display: grid; gap: var(--sp-4); }
+.exp-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-3);
+  align-items: start;
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--line-deep);
+}
+.exp-item:last-child { border-bottom: 0; padding-bottom: 0; }
+.exp-item-n {
+  font-family: var(--serif);
+  font-size: var(--t-small);
+  color: var(--brass-soft);
+}
+.exp-item h3 { font-size: 1.0625rem; font-weight: 500; margin-bottom: 0.3rem; }
+.exp-item p { font-size: var(--t-small); color: var(--on-deep-mute); line-height: 1.62; }
+
+@media (max-width: 900px) {
+  .exp-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   13. INSTAGRAM
+   ============================================================ */
+.ig {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sp-5);
+  align-items: center;
+  padding: clamp(1.75rem, 4vw, 3.25rem);
+  border: 1px solid var(--line-soft);
+  background: var(--bg-alt);
+}
+.ig-figure {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-family: var(--serif);
+  font-size: clamp(2.4rem, 1.4rem + 3.4vw, 4.2rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.ig-figure span {
+  font-family: var(--sans);
+  font-size: var(--t-micro);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+@media (max-width: 760px) {
+  .ig { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   14. BOOKING
+   ============================================================ */
+.booking-head { text-align: center; max-width: 620px; margin: 0 auto var(--sp-6); }
+.booking-head .eyebrow { justify-content: center; }
+.booking-head .lede { margin-inline: auto; }
+
+.booking-panel {
+  background: var(--ivory);
+  border: 1px solid var(--line-soft);
+  padding: clamp(1.25rem, 3.4vw, 3rem);
+  color: var(--fg);
+}
+
+/* --- numbered steps --- */
+.step { padding-top: var(--sp-5); }
+.step:first-child { padding-top: 0; }
+.step + .step { border-top: 1px solid var(--line-soft); margin-top: var(--sp-5); }
+
+.step-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  margin-bottom: var(--sp-4);
+}
+.step-n {
+  width: 26px; height: 26px;
+  flex: none;
+  display: grid; place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  font-size: var(--t-micro);
+  color: var(--fg-faint);
+  transform: translateY(2px);
+  transition: border-color var(--d-fast) linear, color var(--d-fast) linear,
+              background var(--d-fast) linear;
+}
+.step[data-state='active'] .step-n { border-color: var(--brass); color: var(--brass); }
+.step[data-state='done'] .step-n {
+  background: var(--brass);
+  border-color: var(--brass);
+  color: var(--ivory);
+}
+.step-title { font-size: var(--t-small); font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+.step-hint { font-size: var(--t-micro); color: var(--fg-faint); margin-left: auto; text-align: right; }
+
+/* A locked step stays in the DOM and readable — it is dimmed and
+   inert, not hidden, so the customer can see what is coming. */
+.step[data-state='locked'] .step-body {
+  opacity: 0.4;
+  filter: grayscale(0.4);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* --- service picker --- */
+.svc-cats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.6rem;
+}
+.svc-cat {
+  text-align: left;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  background: transparent;
+  font-size: var(--t-small);
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  transition: border-color var(--d-fast) linear, background var(--d-fast) linear;
+}
+.svc-cat:hover, .svc-cat:focus-visible { border-color: var(--brass); background: var(--brass-wash); }
+.svc-cat b { font-weight: 500; }
+.svc-cat i { font-style: normal; color: var(--brass); font-size: 1rem; }
+
+.svc-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--t-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  margin-bottom: var(--sp-3);
+  min-height: 36px;
+}
+.svc-back:hover { color: var(--brass); }
+
+.svc-list { display: grid; gap: 0.4rem; }
+.svc-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  text-align: left;
+  padding: 0.85rem 1rem;
+  min-height: 48px;
+  border: 1px solid var(--line-soft);
+  background: transparent;
+  font-size: var(--t-small);
+  transition: border-color var(--d-fast) linear, background var(--d-fast) linear;
+}
+.svc-option:hover, .svc-option:focus-visible { border-color: var(--brass); background: var(--brass-wash); }
+.svc-option[aria-pressed='true'] {
+  border-color: var(--brass);
+  background: var(--brass-wash);
+  box-shadow: inset 2px 0 0 var(--brass);
+}
+.svc-option-meta { font-size: var(--t-micro); color: var(--fg-faint); white-space: nowrap; }
+
+.svc-chosen {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--brass);
+  background: var(--brass-wash);
+  font-size: var(--t-small);
+}
+.svc-chosen strong { font-weight: 500; }
+
+/* --- calendar --- */
+.cal { max-width: 420px; }
+.cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-3);
+}
+.cal-month { font-family: var(--serif); font-size: 1.2rem; }
+.cal-nav {
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--fg-muted);
+}
+.cal-nav:hover:not([disabled]) { border-color: var(--brass); color: var(--brass); }
+.cal-nav[disabled] { opacity: 0.3; cursor: not-allowed; }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: clamp(2px, 0.6vw, 3px);
+}
+.cal-wd {
+  text-align: center;
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  padding-bottom: 0.4rem;
+}
+.cal-day {
+  aspect-ratio: 1;
+  /* aspect-ratio ties width to height, so a fixed 44px floor would force
+     7 columns to 308px and burst the panel on a 375px phone. This keeps
+     the comfortable target where there is room and shrinks to a still
+     generous 36px where there is not. */
+  min-height: clamp(36px, 11vw, 44px);
+  display: grid;
+  place-items: center;
+  font-size: var(--t-small);
+  border: 1px solid transparent;
+  border-radius: 50%;
+  transition: background var(--d-fast) linear, border-color var(--d-fast) linear, color var(--d-fast) linear;
+}
+.cal-day:hover:not([disabled]) { border-color: var(--brass); }
+/* Disabled controls are exempt from the contrast rules, but a date you
+   cannot read is still a date you cannot reason about. */
+.cal-day[disabled] { color: #9A8D7E; cursor: not-allowed; }
+.cal-day[data-today='true'] { font-weight: 600; box-shadow: inset 0 -2px 0 var(--brass-soft); }
+.cal-day[aria-pressed='true'] { background: var(--espresso); color: var(--ivory); border-color: var(--espresso); }
+.cal-empty { min-height: clamp(36px, 11vw, 44px); }
+
+/* --- time slots --- */
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 0.45rem;
+}
+.slot {
+  min-height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  font-size: var(--t-small);
+  font-variant-numeric: tabular-nums;
+  transition: border-color var(--d-fast) linear, background var(--d-fast) linear, color var(--d-fast) linear;
+}
+.slot:hover:not([disabled]) { border-color: var(--brass); background: var(--brass-wash); }
+.slot[aria-pressed='true'] { background: var(--espresso); border-color: var(--espresso); color: var(--ivory); }
+/* Unavailable slots stay visible with a strike — shape and text, never
+   colour alone, and the accessible name says why. */
+.slot[disabled] {
+  color: #9A8D7E;
+  border-color: var(--line-soft);
+  border-style: dashed;
+  cursor: not-allowed;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.slot-legend {
+  margin-top: var(--sp-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  font-size: var(--t-micro);
+  color: var(--fg-faint);
+}
+.slot-legend span { display: flex; align-items: center; gap: 0.4rem; }
+.slot-legend i {
+  width: 14px; height: 10px;
+  border: 1px solid var(--line);
+  display: block;
+}
+.slot-legend i.is-gone { border-style: dashed; border-color: var(--line-soft); }
+
+/* --- form --- */
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--sp-3);
+}
+.field { display: grid; gap: 0.4rem; }
+.field-wide { grid-column: 1 / -1; }
+.field label {
+  font-size: var(--t-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+.field .req { color: var(--brass); }
+.field input, .field textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.75rem 0.9rem;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  font-size: var(--t-body);
+  transition: border-color var(--d-fast) linear, background var(--d-fast) linear;
+}
+.field textarea { min-height: 96px; resize: vertical; }
+.field input:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--brass);
+  background: rgba(255, 255, 255, 0.6);
+}
+.field input:focus-visible, .field textarea:focus-visible { outline: 2px solid var(--brass); outline-offset: 1px; }
+.field input[aria-invalid='true'], .field textarea[aria-invalid='true'] { border-color: var(--error); }
+.field-error {
+  font-size: var(--t-micro);
+  color: var(--error);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 1em;
+}
+.field-error::before { content: '!'; font-weight: 700; }
+.field-error:empty { display: none; }
+
+.booking-submit { margin-top: var(--sp-5); display: grid; gap: var(--sp-3); }
+.booking-submit .btn { width: 100%; }
+.booking-terms { font-size: var(--t-micro); color: var(--fg-faint); line-height: 1.6; }
+
+/* --- loading / skeleton --- */
+.skeleton {
+  min-height: 46px;
+  background: linear-gradient(90deg, var(--cream) 25%, var(--sand) 37%, var(--cream) 63%);
+  background-size: 400% 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton { animation: shimmer 1.4s ease-in-out infinite; }
+}
+@keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+.spinner {
+  width: 15px; height: 15px;
+  border: 1.5px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  flex: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .spinner { animation: spin 700ms linear infinite; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* --- notices --- */
+.notice {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line);
+  border-left-width: 2px;
+  font-size: var(--t-small);
+  line-height: 1.6;
+  background: rgba(255, 255, 255, 0.5);
+}
+.notice-icon { flex: none; font-weight: 700; }
+.notice-info  { border-left-color: var(--brass); }
+.notice-warn  { border-left-color: var(--warn); }
+.notice-error { border-left-color: var(--error); color: #6E2A22; }
+.notice-ok    { border-left-color: var(--ok); }
+.notice h3 { font-size: var(--t-small); font-weight: 600; margin-bottom: 0.2rem; }
+.notice a { text-decoration: underline; text-underline-offset: 2px; }
+
+/* --- success --- */
+.booking-ok { text-align: center; padding-block: var(--sp-4); }
+.booking-ok-tick {
+  width: 58px; height: 58px;
+  margin: 0 auto var(--sp-4);
+  border: 1px solid var(--brass);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--brass);
+  font-size: 1.4rem;
+}
+.booking-ref {
+  display: inline-block;
+  margin-top: var(--sp-3);
+  padding: 0.5rem 1rem;
+  border: 1px dashed var(--brass);
+  font-family: var(--sans);
+  font-size: 1.1rem;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+}
+.booking-summary {
+  margin: var(--sp-5) auto 0;
+  max-width: 420px;
+  text-align: left;
+  display: grid;
+  gap: 0;
+}
+.booking-summary div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding-block: 0.7rem;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: var(--t-small);
+}
+.booking-summary div:last-child { border-bottom: 0; }
+.booking-summary dt { color: var(--fg-faint); font-size: var(--t-micro); letter-spacing: 0.08em; text-transform: uppercase; }
+.booking-summary dd { text-align: right; font-weight: 500; }
+
+/* --- toasts --- */
+.toasts {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--sp-4) + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 190;
+  display: grid;
+  gap: 0.5rem;
+  width: min(440px, calc(100vw - 2 * var(--gutter)));
+  pointer-events: none;
+}
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.9rem 1.1rem;
+  background: var(--espresso);
+  color: var(--on-deep);
+  font-size: var(--t-small);
+  line-height: 1.5;
+  box-shadow: 0 10px 30px rgba(28, 24, 21, 0.2);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity var(--d-mid) var(--ease-out), transform var(--d-mid) var(--ease-out);
+  pointer-events: auto;
+}
+.toast[data-show='true'] { opacity: 1; transform: none; }
+.toast-icon { flex: none; font-weight: 700; color: var(--brass-soft); }
+.toast-error .toast-icon { color: #E8A39B; }
+.toast-ok .toast-icon { color: #9FD0B0; }
+@media (prefers-reduced-motion: reduce) {
+  .toast { transition: opacity var(--d-fast) linear; transform: none; }
+}
+
+@media (max-width: 760px) {
+  .toasts { bottom: calc(68px + env(safe-area-inset-bottom)); }
+}
+
+/* ============================================================
+   15. CONTACT
+   ============================================================ */
+.contact-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: start;
+}
+.contact-list { margin-top: var(--sp-5); display: grid; }
+.contact-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: var(--sp-3);
+  padding-block: var(--sp-3);
+  border-bottom: 1px solid var(--line-soft);
+  font-size: var(--t-small);
+}
+.contact-row:last-child { border-bottom: 0; }
+.contact-row dt {
+  font-size: var(--t-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  padding-top: 0.15rem;
+}
+.contact-row dd a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--stone); }
+.contact-row dd a:hover { text-decoration-color: var(--brass); color: var(--brass); }
+
+.map {
+  border: 1px solid var(--line-soft);
+  aspect-ratio: 4 / 3;
+  background: var(--bg-alt);
+  overflow: hidden;
+}
+.map iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+@media (max-width: 900px) {
+  .contact-grid { grid-template-columns: 1fr; }
+  .contact-row { grid-template-columns: 100px 1fr; }
+}
+
+/* ============================================================
+   16. CLOSING + FOOTER
+   ============================================================ */
+.closing { text-align: center; }
+.closing-title {
+  font-family: var(--serif);
+  font-size: clamp(2.6rem, 1.4rem + 5.4vw, 6.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+.closing .btn { margin-top: var(--sp-5); }
+
+.footer { background: var(--espresso); color: var(--on-deep); padding-block: var(--sp-7) var(--sp-4); }
+.footer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--sp-5) var(--sp-4);
+  padding-bottom: var(--sp-6);
+}
+.footer-mark { max-width: 34ch; }
+.footer-word {
+  font-family: var(--serif);
+  font-size: 1.7rem;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.6rem;
+}
+.footer h3 {
+  font-size: var(--t-micro);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--on-deep-faint);
+  margin-bottom: var(--sp-3);
+  font-weight: 500;
+}
+.footer li + li { margin-top: 0.55rem; }
+.footer li a, .footer li span { font-size: var(--t-small); color: var(--on-deep-mute); }
+.footer li a:hover { color: var(--brass-soft); }
+.footer-bar {
+  border-top: 1px solid var(--line-deep);
+  padding-top: var(--sp-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-4);
+  justify-content: space-between;
+  font-size: var(--t-micro);
+  color: var(--on-deep-faint);
+}
+
+/* ============================================================
+   17. MOBILE ACTION BAR
+   ============================================================ */
+.action-bar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 95;
+  display: none;
+  gap: 0.5rem;
+  padding: 0.6rem var(--gutter) calc(0.6rem + env(safe-area-inset-bottom));
+  background: var(--ivory);
+  border-top: 1px solid var(--line-soft);
+}
+.action-bar .btn { flex: 1; min-height: 46px; padding-inline: 1rem; }
+.action-bar .icon-btn { width: 46px; height: 46px; flex: none; }
+@media (max-width: 760px) {
+  .action-bar { display: flex; align-items: center; }
+  body { padding-bottom: 68px; }
+
+  /* The action bar already carries "Book an appointment" at all times,
+     so the header repeating it is one control too many on a phone. */
+  .header .btn { display: none; }
+
+  /* The meta list stacks here, and a separator between stacked rows is
+     just a stray mark at the end of a line. */
+  .hero-meta-sep { display: none; }
+  .hero-meta { gap: 0.5rem var(--sp-3); }
+}
+
+/* ============================================================
+   18. PRINT
+   ============================================================ */
+@media print {
+  .header, .action-bar, .drawer, .toasts, .hero-cue, .marquee, .map { display: none !important; }
+  body { background: #fff; color: #000; }
+  .plate { border: 1px solid #ccc; }
+}
